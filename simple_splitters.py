@@ -10,45 +10,13 @@
 # Inventory Creation System.  For more information, visit http://casics.org.
 # ------------------------------------------------------------------------- -->
 
-import bs4
-import chardet
-from   datetime import datetime
-from   fnmatch import fnmatch
-import html2text
-import locale
-import io
-import keyword
-import magic
-import markdown
-import math
-import nltk
-import operator
-import os
-import pickle
-import plac
-import pprint
-import pypandoc
 import re
 import sys
-import tempfile
-import textile
-from   time import sleep
-from   timeit import default_timer as timer
-from   tokenize import tokenize, COMMENT, STRING, NAME
-from   nltk.tokenize.punkt import PunktSentenceTokenizer, PunktParameters
-import unicodedata
 
-sys.path.append('../database')
-sys.path.append('../detector')
-sys.path.append('../cataloguer')
 sys.path.append('../common')
 
 from utils import *
-
-import constants
-from   content_inferencer import *
-from   human_language import *
-from   logger import *
+from logger import *
 
 
 # Delimiter-based splitter
@@ -80,23 +48,3 @@ def safe_camelcase_split(identifier):
     if re.search(_two_capitals, identifier):
         return [identifier]
     return re.sub(_camel_case, r' \1', identifier).split()
-
-
-# Quick testing.
-# .............................................................................
-
-def quick_test():
-    assert(safe_camelcase_split('foobar')     == ['foobar'])
-    assert(safe_camelcase_split('fooBar')     == ['foo', 'Bar'])
-    assert(safe_camelcase_split('FooBar')     == ['Foo', 'Bar'])
-    assert(safe_camelcase_split('getMAX')     == ['getMAX'])
-    assert(safe_camelcase_split('USERLIB')    == ['USERLIB'])
-    assert(safe_camelcase_split('GPSmodule')  == ['GPSmodule'])
-    assert(safe_camelcase_split('ASTVisitor') == ['ASTVisitor'])
-    assert(safe_camelcase_split('SqlList')    == ['Sql', 'List'])
-    assert(safe_camelcase_split('jLabel')     == ['j', 'Label'])
-    print('Test passed.')
-
-
-if __name__ == '__main__':
-    quick_test()
