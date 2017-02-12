@@ -33,6 +33,16 @@ def delimiter_split(identifier):
     parts = [p for p in parts if p]
     return parts
 
+
+_digit_chars = '0123456789'
+_digit_splitter = str.maketrans(_digit_chars, ' '*len(_digit_chars))
+
+def digit_split(identifier):
+    '''Split identifier at digits only.'''
+    parts = str.translate(identifier, _digit_splitter).split(' ')
+    parts = [p for p in parts if p]
+    return parts
+
 
 # Safe camel case splitter
 # .............................................................................
@@ -48,3 +58,21 @@ def safe_camelcase_split(identifier):
     if re.search(_two_capitals, identifier):
         return [identifier]
     return re.sub(_camel_case, r' \1', identifier).split()
+
+
+# Safe simple splitter
+# .............................................................................
+
+_hard_split_chars = '_.:0123456789'
+_hard_splitter = str.maketrans(_hard_split_chars, ' '*len(_hard_split_chars))
+
+def safe_simple_split(identifier):
+    '''Split identifiers by hard delimiters such as underscores, digits, and
+    forward camel case only, i.e., lower-to-upper case transitions.  This
+    means it will split fooBarBaz into 'foo', 'Bar' and 'Baz', and foo2bar
+    into 'foo' and 'bar, but it won't change SQLlite or similar identifiers.
+    Does not split identifies that have multiple adjacent uppercase
+    letters.
+    '''
+    parts = str.translate(identifier, _hard_splitter).split(' ')
+    return list(flatten(safe_camelcase_split(token) for token in parts))
