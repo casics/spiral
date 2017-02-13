@@ -76,3 +76,22 @@ def safe_simple_split(identifier):
     '''
     parts = str.translate(identifier, _hard_splitter).split(' ')
     return list(flatten(safe_camelcase_split(token) for token in parts))
+
+
+# Not-so-safe simple splitter
+# .............................................................................
+
+_hard_split_chars = '_.:0123456789'
+_hard_splitter = str.maketrans(_hard_split_chars, ' '*len(_hard_split_chars))
+
+def simple_split(identifier):
+    '''Split identifiers by hard delimiters such as underscores, digits, and
+    forward camel case only, i.e., lower-to-upper case transitions.  This
+    means it will split fooBarBaz into 'foo', 'Bar' and 'Baz', and foo2bar
+    into 'foo' and 'bar, but it won't change SQLlite or similar identifiers.
+    Unlike safe_simple_split(), this will split identifiers that may have
+    sequences of all upper-case letters if there is a lower-to-upper case
+    transition somewhere.  Example: ABCtestSplit -> ['ABCtest', 'Split'].
+    '''
+    parts = str.translate(identifier, _hard_splitter)
+    return re.sub(_camel_case, r' \1', parts).split()
