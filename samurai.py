@@ -14,6 +14,7 @@ import csv
 import enchant
 import math
 import plac
+import re
 from   scipy.interpolate import interp1d
 import sys
 
@@ -21,6 +22,7 @@ sys.path.append('../common')
 
 from utils import *
 from logger import *
+from simple_splitters import simple_split
 
 
 # Global constants.
@@ -112,7 +114,8 @@ _raw_frequencies = None
 # Main functions.
 # .............................................................................
 
-def same_case_split(s, score_ns=0.001):
+
+def same_case_split(s, score_ns=0.0000005):
     '''Modified version of sameCaseSplit() from the paper by Enslen et al.
     Modifications: (1) if the given string 's' is a single character, return
     it right away; (2) if the given string 's' is a common dictionary word,
@@ -124,7 +127,7 @@ def same_case_split(s, score_ns=0.001):
 
     if len(s) < 2:
         log.debug('"{}" cannot be split; returning as-is'.format(s))
-        return s
+        return [s]
     elif len(s) > 1 and in_dictionary(s):
         log.debug('"{}" is a dictionary word; returning as-is'.format(s))
         return [s]
@@ -134,22 +137,23 @@ def same_case_split(s, score_ns=0.001):
     i         = 0
     max_score = -1
     threshold = max(score(s), score_ns)
-    log.debug('threshold score = {:8f}'.format(float(threshold)))
+    log.debug('threshold score = {}'.format(threshold))
     while i < n:
         left       = s[0:i]
         right      = s[i:n]
         score_l    = score(left)
         score_r    = score(right)
-        to_split_l = math.sqrt(score_l) > threshold
-        to_split_r = math.sqrt(score_r) > threshold
         prefix     = (is_prefix(left) and not in_dictionary(right)) or is_suffix(right)
+        to_split_l = rescale(score_l) > threshold
+        to_split_r = rescale(score_r) > threshold
 
-        log.debug('|{} : {}| l = {:7f} r = {:7f} split_l = {:1b} split_r = {:1b} prefix = {:1b} max_score = {:7f}'
-                  .format(s[0:i], s[i:n], float(score_l), float(score_r),to_split_l, to_split_r, prefix, max_score))
+        log.debug('|{} : {}| l = {} r = {} split_l = {:1b} split_r = {:1b} prefix = {:1b} threshold = {} max_score = {}'
+                  .format(left, right, rescale(score_l), rescale(score_r), to_split_l, to_split_r, prefix, threshold, max_score))
 
         if not prefix and to_split_l and to_split_r:
             log.debug('--> case 1')
             if (score_l + score_r) > max_score:
+                log.debug('({} + {}) > {}'.format(score_l, score_r, max_score))
                 max_score = score_l + score_r
                 split = [left, right]
                 log.debug('case 1 split result: {}'.format(split))
@@ -168,9 +172,58 @@ def same_case_split(s, score_ns=0.001):
     log.debug('<-- returning {}'.format(result))
     return result
 
+
+def mixed_case_split(identifier):
+    log = Logger().get_log()
+    splits = []
+    log.debug('splitting {}'.format(identifier))
+    for s in simple_split(identifier):
+        # Look for upper-to-lower case transitions
+        transition = re.search(r'[A-Z][a-z]', s)
+        if not transition:
+            log.debug('no upper-to-lower case transition in {}'.format(s))
+            parts = [s]
+        else:
+            i = transition.start(0)
+            log.debug('case transition: {}{}'.format(s[i], s[i+1]))
+            if i > 0:
+                camel_score = score(s[i:])
+                log.debug('"{}" score {}'.format(s[i:], camel_score))
+            else:
+                camel_score = score(s)
+                log.debug('"{}" score {}'.format(s, camel_score))
+            alt_score = score(s[i+1:])
+            log.debug('"{}" alt score {}'.format(s[i+1:], alt_score))
+            if camel_score > rescale(alt_score):
+                log.debug('{} > {} ==> better to include uppercase letter'
+                          .format(camel_score, rescale(alt_score)))
+                if i > 0:
+                    parts = [s[0:i], s[i:]]
+                else:
+                    parts = [s]
+            else:
+                log.debug('not better to include uppercase letter')
+                parts = [s[0:i+1], s[i+1:]]
+            log.debug('split outcome: {}'.format(parts))
+        splits = splits + parts
+
+    log.debug('turning over to same_case_split: {}'.format(splits))
+    results = []
+    for token in splits:
+        log.debug('splitting {}'.format(token))
+        results = results + same_case_split(token, score(token))
+    log.debug('final results: {}'.format(results))
+    return results
+
 
 # Utilities.
 # .............................................................................
+
+def rescale(value):
+    return math.sqrt(value)
+#    return value
+#    return math.log(value) if value > 0 else 0
+
 
 def in_dictionary(word):
     return _dictionary.check(word.lower())
@@ -199,8 +252,9 @@ def frequencies_from_file(filename, filter_words=None):
             for row in reader:
                 if filter_words and row['word'] in filter_words:
                     continue
-                frequencies[row['word']] = row['frequency']
-                total += int(row['frequency'])
+                value = int(row['frequency'])
+                frequencies[row['word']] = value
+                total += value
             log.debug('read {} entries'.format(len(frequencies)))
             return (frequencies, total)
     except Exception as err:
@@ -216,11 +270,42 @@ def init_word_frequencies():
 
 def word_frequency(w):
     global _interpolated, _raw_frequencies
-    return _interpolated(_raw_frequencies[w]) if w in _raw_frequencies else 0
+    # return _interpolated(_raw_frequencies[w]) if w in _raw_frequencies else 0
+    return int(_raw_frequencies[w]) if w in _raw_frequencies else 0
 
 
 # Quick test interface.
 # .............................................................................
+
+def run_cases(bias):
+    msg('-- {}'.format(bias) + '-'*70)
+    print(same_case_split('finditer', bias))
+    print(same_case_split('isnumber', bias))
+    print(same_case_split('isbetterfile', bias))
+    print(same_case_split('threshold', bias))
+    print(same_case_split('iskeyword', bias))
+    print(same_case_split('fileio', bias))
+    print(same_case_split('initdb', bias))
+    print(same_case_split('terraindata', bias))   # terrain data
+    print(same_case_split('treservations', bias)) # treservations
+    print(same_case_split('trigname', bias))
+    print(same_case_split('undirected', bias))
+    print(same_case_split('usemap', bias))
+    print(same_case_split('versionend', bias))
+    print(same_case_split('vframe', bias))
+    print(same_case_split('vqgen', bias))
+    print(same_case_split('sampfmt', bias)) # samp fmt
+    print(same_case_split('sampy', bias))   # sampy
+    print(same_case_split('readcmd', bias))
+    print(same_case_split('uval', bias))
+    print(same_case_split('updatecpu', bias))
+    print(same_case_split('textnode', bias))
+    print(same_case_split('sandcx', bias)) # sandcx
+    print(same_case_split('mpegts', bias)) # mpeg ts
+    print(same_case_split('mixmonitor', bias))
+    print(same_case_split('imhand', bias)) # im hand
+    print(same_case_split('connectpath', bias))
+
 
 def run_test(debug=False, loglevel='info'):
 
@@ -232,32 +317,64 @@ def run_test(debug=False, loglevel='info'):
         log.set_level(loglevel)
 
     init_word_frequencies()
-    print(same_case_split('finditer', 0.0008))
-    print(same_case_split('isnumber', 0.0008))
-    print(same_case_split('isbetterfile', 0.0008))
-    print(same_case_split('threshold', 0.0008))
-    print(same_case_split('iskeyword', 0.0008))
-    print(same_case_split('fileio', 0.0008))
-    print(same_case_split('initdb', 0.0008))
-    print(same_case_split('terraindata', 0.0008))   # terrain data
-    print(same_case_split('treservations', 0.0008)) # treservations
-    print(same_case_split('trigname', 0.0008))
-    print(same_case_split('undirected', 0.0008))
-    print(same_case_split('usemap', 0.0008))
-    print(same_case_split('versionend', 0.0008))
-    print(same_case_split('vframe', 0.0008))
-    print(same_case_split('vqgen', 0.0008))
-    print(same_case_split('sampfmt', 0.0008)) # samp fmt
-    print(same_case_split('sampy', 0.0008))   # sampy
-    print(same_case_split('readcmd', 0.0008))
-    print(same_case_split('uval', 0.0008))
-    print(same_case_split('updatecpu', 0.0008))
-    print(same_case_split('textnode', 0.0008))
-    print(same_case_split('sandcx', 0.0008)) # sandcx
-    print(same_case_split('mpegts', 0.0008)) # mpeg ts
-    print(same_case_split('mixmonitor', 0.0008))
-    print(same_case_split('imhand', 0.0008)) # im hand
-    print(same_case_split('connectpath', 0.0008))
+    print(mixed_case_split('GPSmodule'))
+    print(mixed_case_split('bigTHING'))
+    print(mixed_case_split('ABCFooBar'))
+    print(mixed_case_split('getMAX'))
+    print(mixed_case_split('FOOOBAR'))
+    print(mixed_case_split('SqlList'))
+    print(mixed_case_split('ASTVisitor'))
+    print(mixed_case_split('finditer'))
+    print(mixed_case_split('isnumber'))
+    print(mixed_case_split('isbetterfile'))
+    print(mixed_case_split('threshold'))
+    print(mixed_case_split('iskeyword'))
+    print(mixed_case_split('fileio'))
+    print(mixed_case_split('initdb'))
+    print(mixed_case_split('terraindata'))   # terrain data
+    print(mixed_case_split('treservations')) # treservations
+    print(mixed_case_split('trigname'))
+    print(mixed_case_split('undirected'))
+    print(mixed_case_split('usemap'))
+    print(mixed_case_split('versionend'))
+    print(mixed_case_split('vframe'))
+    print(mixed_case_split('vqgen'))
+    print(mixed_case_split('sampfmt')) # samp fmt
+    print(mixed_case_split('sampy'))   # sampy
+    print(mixed_case_split('readcmd'))
+    print(mixed_case_split('uval'))
+    print(mixed_case_split('updatecpu'))
+    print(mixed_case_split('textnode'))
+    print(mixed_case_split('sandcx')) # sandcx
+    print(mixed_case_split('mpegts')) # mpeg ts
+    print(mixed_case_split('mixmonitor'))
+    print(mixed_case_split('imhand')) # im hand
+    print(mixed_case_split('connectpath'))
+    # # run_cases(0.0001)
+    # # run_cases(0.00001)
+    # # run_cases(0.00002)
+    # # run_cases(0.00003)
+    # # run_cases(0.00004)
+    # # run_cases(0.00005)
+    # # run_cases(0.00006)
+    # # run_cases(0.00007)
+    # # run_cases(0.00008)
+    # # run_cases(0.00009)
+    # # run_cases(0.000001)
+    # # run_cases(0.000002)
+    # # run_cases(0.000003)
+    # # run_cases(0.000004)
+    # # run_cases(0.000005)
+    # # run_cases(0.000006)
+    # # run_cases(0.000007)
+    # # run_cases(0.000008)
+    # # run_cases(0.000009)
+    # # run_cases(0.0000095)
+    # # run_cases(0.0000001)
+    # # run_cases(0.0000005)
+    # # run_cases(0.00000001)
+    # # run_cases(0.000000001)
+    # # run_cases(0.0000000001)
 
     if debug:
         import ipdb; ipdb.set_trace()
