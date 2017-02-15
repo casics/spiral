@@ -25,19 +25,25 @@ from logger import *
 # Utilities
 # .............................................................................
 
-def simple_undesirable(w):
+def filter_simple(token, frequency):
     '''Single letters, or repeated 2-letter sequences such as 'aa' or 'Bb'.'''
-#    return len(w) == 1 or (len(w) == 2 and w[0].lower() == w[1].lower())
-    return (len(w) == 2 and w[0].lower() == w[1].lower())
+    return len(w) == 1 or (len(w) == 2 and w[0].lower() == w[1].lower())
 
 
-def special_case_undesirable(w):
-    '''Things that end up in the word lists but are not useful.'''
-    return 'py' == w.lower()
+def filter_special(token, frequency):
+    '''Things that end up in the token lists but are not useful.'''
+    return 'py' == token.lower()
 
 
-def undesirable(w):
-    return simple_undesirable(w) or special_case_undesirable(w)
+def filter_by_frequency(token, frequency):
+    return int(frequency) < 30
+
+
+def undesirable(token, frequency):
+    return False
+    # return (filter_simple(token, frequency)
+    #         or filter_special(token, frequency)
+    #         or filter_by_frequency(token, frequency))
 
 
 # Main
@@ -57,16 +63,16 @@ def create_frequency_file(inputfile=None, outputfile=None, debug=False,
                     import ipdb; ipdb.set_trace()
                 total = 0
                 for line in input:
-                    (word, count) = line.split()
-                    if undesirable(word):
-                        log.debug('skipping undesirable word {}'.format(word))
+                    (token, frequency) = line.split()
+                    if undesirable(token, frequency):
+                        log.debug('skipping undesirable token {}'.format(token))
                     else:
-                        output.write(word)
+                        output.write(token)
                         output.write(',')
-                        output.write(count)
+                        output.write(frequency)
                         output.write('\n')
                         total += 1
-                log.info('{} words written to {}'.format(total, outputfile))
+                log.info('{} tokens written to {}'.format(total, outputfile))
     except Exception as err:
         log.error(err)
 
