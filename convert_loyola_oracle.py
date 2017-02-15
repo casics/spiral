@@ -40,7 +40,7 @@ def convert_file(inputfile=None, outputfile=None, debug=False, loglevel='info'):
             total = 0
             for line in input:
                 (_, token, _, _, _, _, result, *_) = line.split()
-                expected[token] = result.split('-')
+                expected[token] = [x for x in result.split('-') if not x.isdigit()]
                 total += 1
         with open(outputfile, 'wb') as pickle_file:
             pickle.dump(expected, pickle_file)
