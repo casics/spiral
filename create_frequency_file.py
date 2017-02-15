@@ -39,6 +39,11 @@ def filter_by_frequency(token, frequency):
     return int(frequency) < 30
 
 
+# 2017-02-15 <mhucka@caltech.edu>
+# Further testing and tweaking of the code in samurai.py ended up making this
+# filter of the frequency data undesirable.  Leaving all this code in place
+# in case we change our mind in the future, but for now, this is set to
+# never filter anything.
 def undesirable(token, frequency):
     return False
     # return (filter_simple(token, frequency)
