@@ -81,7 +81,7 @@ def safe_simple_split(identifier):
 # Not-so-safe simple splitter
 # .............................................................................
 
-_hard_split_chars = '_.:0123456789'
+_hard_split_chars = '~_.:0123456789'
 _hard_splitter = str.maketrans(_hard_split_chars, ' '*len(_hard_split_chars))
 
 def simple_split(identifier):
