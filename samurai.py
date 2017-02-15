@@ -22,6 +22,7 @@ sys.path.append('../common')
 
 from utils import *
 from logger import *
+from frequencies import *
 from simple_splitters import simple_split
 
 
@@ -107,13 +108,9 @@ suffix_list = ['a', 'ac', 'acea', 'aceae', 'acean', 'aceous', 'ade', 'aemia',
                'vorous', 'xor', 'y', 'yl', 'yne', 'zoic', 'zoon', 'zygous',
                'zyme']
 
-_interpolated = None
-_raw_frequencies = None
-
 
 # Main functions.
 # .............................................................................
-
 
 def same_case_split(s, score_ns=0.0000005):
     '''Modified version of sameCaseSplit() from the paper by Enslen et al.
@@ -144,11 +141,11 @@ def same_case_split(s, score_ns=0.0000005):
         score_l    = score(left)
         score_r    = score(right)
         prefix     = (is_prefix(left) and not in_dictionary(right)) or is_suffix(right)
-        to_split_l = rescale(score_l) > threshold
-        to_split_r = rescale(score_r) > threshold
+        to_split_l = rescale(left, score_l) > threshold
+        to_split_r = rescale(right, score_r) > threshold
 
         log.debug('|{} : {}| l = {} r = {} split_l = {:1b} split_r = {:1b} prefix = {:1b} threshold = {} max_score = {}'
-                  .format(left, right, rescale(score_l), rescale(score_r), to_split_l, to_split_r, prefix, threshold, max_score))
+                  .format(left, right, rescale(left, score_l), rescale(right, score_r), to_split_l, to_split_r, prefix, threshold, max_score))
 
         if not prefix and to_split_l and to_split_r:
             log.debug('--> case 1')
@@ -192,11 +189,12 @@ def mixed_case_split(identifier):
             else:
                 camel_score = score(s)
                 log.debug('"{}" score {}'.format(s, camel_score))
-            alt_score = score(s[i+1:])
-            log.debug('"{}" alt score {}'.format(s[i+1:], alt_score))
-            if camel_score > rescale(alt_score):
+            alt = s[i+1:]
+            alt_score = score(alt)
+            log.debug('"{}" alt score {}'.format(alt, alt_score))
+            if camel_score > rescale(alt, alt_score):
                 log.debug('{} > {} ==> better to include uppercase letter'
-                          .format(camel_score, rescale(alt_score)))
+                          .format(camel_score, rescale(alt, alt_score)))
                 if i > 0:
                     parts = [s[0:i], s[i:]]
                 else:
@@ -219,8 +217,14 @@ def mixed_case_split(identifier):
 # Utilities.
 # .............................................................................
 
-def rescale(value):
-    return math.sqrt(value)
+def rescale(token, value):
+    if len(token) == 1:
+        return 0
+    else:
+        return math.pow(value, 1.0/6)
+
+#    return math.pow(value, 1.0/6)
+#    return math.sqrt(value)
 #    return value
 #    return math.log(value) if value > 0 else 0
 
@@ -238,40 +242,9 @@ def is_suffix(s):
 
 
 def score(w):
+    # if len(w) == 1:
+    #     return 0
     return 0 if not w else word_frequency(w)
-
-
-def frequencies_from_file(filename, filter_words=None):
-    log = Logger().get_log()
-    try:
-        log.debug('reading word frequencies from {}'.format(filename))
-        with open(filename, 'r') as f:
-            reader = csv.DictReader(f, fieldnames=['word','frequency'])
-            frequencies = {}
-            total = 0
-            for row in reader:
-                if filter_words and row['word'] in filter_words:
-                    continue
-                value = int(row['frequency'])
-                frequencies[row['word']] = value
-                total += value
-            log.debug('read {} entries'.format(len(frequencies)))
-            return (frequencies, total)
-    except Exception as err:
-        log.error(err)
-        return ({}, 0)
-
-
-def init_word_frequencies():
-    global _interpolated, _raw_frequencies
-    (_raw_frequencies, total) = frequencies_from_file('frequencies.csv')
-    _interpolated = interp1d([0, total], [0, 1])
-
-
-def word_frequency(w):
-    global _interpolated, _raw_frequencies
-    # return _interpolated(_raw_frequencies[w]) if w in _raw_frequencies else 0
-    return int(_raw_frequencies[w]) if w in _raw_frequencies else 0
 
 
 # Quick test interface.
@@ -308,8 +281,7 @@ def run_cases(bias):
 
 
 def run_test(debug=False, loglevel='info'):
-
-    '''Test word_extractor.py.'''
+    '''Samurai id splitting algorithm.'''
     log = Logger(os.path.splitext(sys.argv[0])[0], console=True).get_log()
     if debug:
         log.set_level('debug')
@@ -317,6 +289,7 @@ def run_test(debug=False, loglevel='info'):
         log.set_level(loglevel)
 
     init_word_frequencies()
+    print(mixed_case_split('NSTEMPLATEMATCHREFSET_METER'))
     print(mixed_case_split('GPSmodule'))
     print(mixed_case_split('bigTHING'))
     print(mixed_case_split('ABCFooBar'))
@@ -350,31 +323,31 @@ def run_test(debug=False, loglevel='info'):
     print(mixed_case_split('mixmonitor'))
     print(mixed_case_split('imhand')) # im hand
     print(mixed_case_split('connectpath'))
-    # # run_cases(0.0001)
-    # # run_cases(0.00001)
-    # # run_cases(0.00002)
-    # # run_cases(0.00003)
-    # # run_cases(0.00004)
-    # # run_cases(0.00005)
-    # # run_cases(0.00006)
-    # # run_cases(0.00007)
-    # # run_cases(0.00008)
-    # # run_cases(0.00009)
-    # # run_cases(0.000001)
-    # # run_cases(0.000002)
-    # # run_cases(0.000003)
-    # # run_cases(0.000004)
-    # # run_cases(0.000005)
-    # # run_cases(0.000006)
-    # # run_cases(0.000007)
-    # # run_cases(0.000008)
-    # # run_cases(0.000009)
-    # # run_cases(0.0000095)
-    # # run_cases(0.0000001)
-    # # run_cases(0.0000005)
-    # # run_cases(0.00000001)
-    # # run_cases(0.000000001)
-    # # run_cases(0.0000000001)
+    # # # run_cases(0.0001)
+    # # # run_cases(0.00001)
+    # # # run_cases(0.00002)
+    # # # run_cases(0.00003)
+    # # # run_cases(0.00004)
+    # # # run_cases(0.00005)
+    # # # run_cases(0.00006)
+    # # # run_cases(0.00007)
+    # # # run_cases(0.00008)
+    # # # run_cases(0.00009)
+    # # # run_cases(0.000001)
+    # # # run_cases(0.000002)
+    # # # run_cases(0.000003)
+    # # # run_cases(0.000004)
+    # # # run_cases(0.000005)
+    # # # run_cases(0.000006)
+    # # # run_cases(0.000007)
+    # # # run_cases(0.000008)
+    # # # run_cases(0.000009)
+    # # # run_cases(0.0000095)
+    # # # run_cases(0.0000001)
+    # # # run_cases(0.0000005)
+    # # # run_cases(0.00000001)
+    # # # run_cases(0.000000001)
+    # # # run_cases(0.0000000001)
 
     if debug:
         import ipdb; ipdb.set_trace()
