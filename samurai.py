@@ -140,7 +140,7 @@ def same_case_split(s, score_ns=0.0000005):
         right      = s[i:n]
         score_l    = score(left)
         score_r    = score(right)
-        prefix     = (is_prefix(left) and not in_dictionary(right)) or is_suffix(right)
+        prefix     = is_prefix(left) or is_suffix(right)
         to_split_l = rescale(left, score_l) > threshold
         to_split_r = rescale(right, score_r) > threshold
 
@@ -218,10 +218,7 @@ def mixed_case_split(identifier):
 # .............................................................................
 
 def rescale(token, value):
-    if len(token) == 1:
-        return 0
-    else:
-        return math.pow(value, 1.0/6)
+    return 0 if len(token) == 1 else math.pow(value, 1.0/2.5)
 
 #    return math.pow(value, 1.0/6)
 #    return math.sqrt(value)
@@ -289,6 +286,7 @@ def run_test(debug=False, loglevel='info'):
         log.set_level(loglevel)
 
     init_word_frequencies()
+    print(mixed_case_split('usage_getdata'))
     print(mixed_case_split('NSTEMPLATEMATCHREFSET_METER'))
     print(mixed_case_split('GPSmodule'))
     print(mixed_case_split('bigTHING'))
@@ -311,7 +309,7 @@ def run_test(debug=False, loglevel='info'):
     print(mixed_case_split('usemap'))
     print(mixed_case_split('versionend'))
     print(mixed_case_split('vframe'))
-    print(mixed_case_split('vqgen'))
+    print(mixed_case_split('vqgen')) # vq gen
     print(mixed_case_split('sampfmt')) # samp fmt
     print(mixed_case_split('sampy'))   # sampy
     print(mixed_case_split('readcmd'))
