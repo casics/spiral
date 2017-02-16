@@ -34,7 +34,7 @@ from simple_splitters import simple_split
 #    from nltk.corpus import words as nltk_words
 #    dictionary = nltk_words.words()
 
-_dictionary = enchant.Dict()
+_dictionary = enchant.Dict("en_US")
 
 # The lists of prefixes and suffixes came from the web page for Samurai,
 # https://hiper.cis.udel.edu/Samurai/Samurai.html
@@ -262,6 +262,10 @@ def run_test(debug=False, loglevel='info'):
 
     init_word_frequencies()
     print(mixed_case_split('somevar'))
+    print(mixed_case_split('itervalues'))
+    print(mixed_case_split('autocommit'))
+    print(mixed_case_split('httpexceptions'))
+    print(mixed_case_split('argv'))
     print(mixed_case_split('usage_getdata'))
     print(mixed_case_split('NSTEMPLATEMATCHREFSET_METER'))
     print(mixed_case_split('GPSmodule'))
