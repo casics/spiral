@@ -251,35 +251,6 @@ def score(w):
 # Quick test interface.
 # .............................................................................
 
-def run_cases(bias):
-    msg('-- {}'.format(bias) + '-'*70)
-    print(same_case_split('finditer', bias))
-    print(same_case_split('isnumber', bias))
-    print(same_case_split('isbetterfile', bias))
-    print(same_case_split('threshold', bias))
-    print(same_case_split('iskeyword', bias))
-    print(same_case_split('fileio', bias))
-    print(same_case_split('initdb', bias))
-    print(same_case_split('terraindata', bias))   # terrain data
-    print(same_case_split('treservations', bias)) # treservations
-    print(same_case_split('trigname', bias))
-    print(same_case_split('undirected', bias))
-    print(same_case_split('usemap', bias))
-    print(same_case_split('versionend', bias))
-    print(same_case_split('vframe', bias))
-    print(same_case_split('vqgen', bias))
-    print(same_case_split('sampfmt', bias)) # samp fmt
-    print(same_case_split('sampy', bias))   # sampy
-    print(same_case_split('readcmd', bias))
-    print(same_case_split('uval', bias))
-    print(same_case_split('updatecpu', bias))
-    print(same_case_split('textnode', bias))
-    print(same_case_split('sandcx', bias)) # sandcx
-    print(same_case_split('mpegts', bias)) # mpeg ts
-    print(same_case_split('mixmonitor', bias))
-    print(same_case_split('imhand', bias)) # im hand
-    print(same_case_split('connectpath', bias))
-
 
 def run_test(debug=False, loglevel='info'):
     '''Samurai id splitting algorithm.'''
@@ -326,31 +297,6 @@ def run_test(debug=False, loglevel='info'):
     print(mixed_case_split('mixmonitor'))
     print(mixed_case_split('imhand')) # im hand
     print(mixed_case_split('connectpath'))
-    # # # run_cases(0.0001)
-    # # # run_cases(0.00001)
-    # # # run_cases(0.00002)
-    # # # run_cases(0.00003)
-    # # # run_cases(0.00004)
-    # # # run_cases(0.00005)
-    # # # run_cases(0.00006)
-    # # # run_cases(0.00007)
-    # # # run_cases(0.00008)
-    # # # run_cases(0.00009)
-    # # # run_cases(0.000001)
-    # # # run_cases(0.000002)
-    # # # run_cases(0.000003)
-    # # # run_cases(0.000004)
-    # # # run_cases(0.000005)
-    # # # run_cases(0.000006)
-    # # # run_cases(0.000007)
-    # # # run_cases(0.000008)
-    # # # run_cases(0.000009)
-    # # # run_cases(0.0000095)
-    # # # run_cases(0.0000001)
-    # # # run_cases(0.0000005)
-    # # # run_cases(0.00000001)
-    # # # run_cases(0.000000001)
-    # # # run_cases(0.0000000001)
 
     if debug:
         import ipdb; ipdb.set_trace()
