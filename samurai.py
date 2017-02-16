@@ -170,7 +170,7 @@ def same_case_split(s, score_ns=0.0000005):
     return result
 
 
-def mixed_case_split(identifier):
+def samurai_split(identifier):
     log = Logger().get_log()
     splits = []
     log.debug('splitting {}'.format(identifier))
@@ -213,17 +213,21 @@ def mixed_case_split(identifier):
     log.debug('final results: {}'.format(results))
     return results
 
+
+def mixed_case_split(identifier):
+    return samurai_split(identifier)
+
 
 # Utilities.
 # .............................................................................
 
 def rescale(token, value):
-    return 0 if len(token) == 1 else math.pow(value, 1.0/2.5)
-
-#    return math.pow(value, 1.0/6)
-#    return math.sqrt(value)
-#    return value
-#    return math.log(value) if value > 0 else 0
+    if len(token) <= 1:
+        return 0
+    elif len(token) <= 4 and in_dictionary(token):
+        return math.pow(value, 1.0/2)
+    else:
+        return math.pow(value, 1.0/2.5)
 
 
 def in_dictionary(word):
@@ -239,9 +243,9 @@ def is_suffix(s):
 
 
 def score(w):
-    # if len(w) == 1:
-    #     return 0
-    return 0 if not w else word_frequency(w)
+    f = word_frequency(w)
+    return 0 if f < 30 else f
+    # return 0 if not w else word_frequency(w)
 
 
 # Quick test interface.
@@ -286,6 +290,7 @@ def run_test(debug=False, loglevel='info'):
         log.set_level(loglevel)
 
     init_word_frequencies()
+    print(mixed_case_split('somevar'))
     print(mixed_case_split('usage_getdata'))
     print(mixed_case_split('NSTEMPLATEMATCHREFSET_METER'))
     print(mixed_case_split('GPSmodule'))
