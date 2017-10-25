@@ -86,7 +86,7 @@ def save_frequencies_to_pickle(frequencies, total, filename=_frequencies_pickle)
     except IOError as err:
         log.error('encountered error trying to dump pickle {}'.format(filename))
         log.error(err)
-    except PickleError as err:
+    except pickle.PickleError as err:
         log.error('pickling error for {}'.format(filename))
         log.error(err)
 
