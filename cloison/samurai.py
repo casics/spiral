@@ -20,7 +20,6 @@ import sys
 
 sys.path.append('../common')
 
-from utils import *
 from logger import *
 from frequencies import *
 from simple_splitters import simple_split
@@ -112,7 +111,50 @@ suffix_list = ['a', 'ac', 'acea', 'aceae', 'acean', 'aceous', 'ade', 'aemia',
 # Main functions.
 # .............................................................................
 
-def same_case_split(s, score_ns=0.0000005):
+def samurai_split(identifier, log=Logger().get_log()):
+    splits = []
+    log.debug('splitting {}'.format(identifier))
+    for s in simple_split(identifier):
+        # Look for upper-to-lower case transitions
+        transition = re.search(r'[A-Z][a-z]', s)
+        if not transition:
+            log.debug('no upper-to-lower case transition in {}'.format(s))
+            parts = [s]
+        else:
+            i = transition.start(0)
+            log.debug('case transition: {}{}'.format(s[i], s[i+1]))
+            if i > 0:
+                camel_score = score(s[i:])
+                log.debug('"{}" score {}'.format(s[i:], camel_score))
+            else:
+                camel_score = score(s)
+                log.debug('"{}" score {}'.format(s, camel_score))
+            alt = s[i+1:]
+            alt_score = score(alt)
+            log.debug('"{}" alt score {}'.format(alt, alt_score))
+            if camel_score > rescale(alt, alt_score):
+                log.debug('{} > {} ==> better to include uppercase letter'
+                          .format(camel_score, rescale(alt, alt_score)))
+                if i > 0:
+                    parts = [s[0:i], s[i:]]
+                else:
+                    parts = [s]
+            else:
+                log.debug('not better to include uppercase letter')
+                parts = [s[0:i+1], s[i+1:]]
+            log.debug('split outcome: {}'.format(parts))
+        splits = splits + parts
+
+    log.debug('turning over to same_case_split: {}'.format(splits))
+    results = []
+    for token in splits:
+        log.debug('splitting {}'.format(token))
+        results = results + same_case_split(token, score(token))
+    log.debug('final results: {}'.format(results))
+    return results
+
+
+def same_case_split(s, score_ns=0.0000005, log=Logger().get_log()):
     '''Modified version of sameCaseSplit() from the paper by Enslen et al.
     Modifications: (1) if the given string 's' is a single character, return
     it right away; (2) if the given string 's' is a common dictionary word,
@@ -120,7 +162,6 @@ def same_case_split(s, score_ns=0.0000005):
     a candidate split is a prefix, also check if the right side is a common
     dictionary word.
     '''
-    log = Logger().get_log()
 
     if len(s) < 2:
         log.debug('"{}" cannot be split; returning as-is'.format(s))
@@ -168,50 +209,6 @@ def same_case_split(s, score_ns=0.0000005):
     result = split if split else [s]
     log.debug('<-- returning {}'.format(result))
     return result
-
-
-def samurai_split(identifier):
-    log = Logger().get_log()
-    splits = []
-    log.debug('splitting {}'.format(identifier))
-    for s in simple_split(identifier):
-        # Look for upper-to-lower case transitions
-        transition = re.search(r'[A-Z][a-z]', s)
-        if not transition:
-            log.debug('no upper-to-lower case transition in {}'.format(s))
-            parts = [s]
-        else:
-            i = transition.start(0)
-            log.debug('case transition: {}{}'.format(s[i], s[i+1]))
-            if i > 0:
-                camel_score = score(s[i:])
-                log.debug('"{}" score {}'.format(s[i:], camel_score))
-            else:
-                camel_score = score(s)
-                log.debug('"{}" score {}'.format(s, camel_score))
-            alt = s[i+1:]
-            alt_score = score(alt)
-            log.debug('"{}" alt score {}'.format(alt, alt_score))
-            if camel_score > rescale(alt, alt_score):
-                log.debug('{} > {} ==> better to include uppercase letter'
-                          .format(camel_score, rescale(alt, alt_score)))
-                if i > 0:
-                    parts = [s[0:i], s[i:]]
-                else:
-                    parts = [s]
-            else:
-                log.debug('not better to include uppercase letter')
-                parts = [s[0:i+1], s[i+1:]]
-            log.debug('split outcome: {}'.format(parts))
-        splits = splits + parts
-
-    log.debug('turning over to same_case_split: {}'.format(splits))
-    results = []
-    for token in splits:
-        log.debug('splitting {}'.format(token))
-        results = results + same_case_split(token, score(token))
-    log.debug('final results: {}'.format(results))
-    return results
 
 
 def mixed_case_split(identifier):
