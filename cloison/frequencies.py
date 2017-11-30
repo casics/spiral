@@ -6,14 +6,11 @@ import csv
 import enchant
 import math
 import os
+import pickle
 import plac
 import re
 from   scipy.interpolate import interp1d
 import sys
-
-sys.path.append('../common')
-
-from logger import *
 
 
 # Global variables.
@@ -32,9 +29,7 @@ _frequencies_csv    = os.path.join(_frequencies_dir, 'frequencies.csv')
 # .............................................................................
 
 def frequencies_from_file(filename=_frequencies_csv, filter_words=None):
-    log = Logger().get_log()
     try:
-        log.debug('reading word frequencies from {}'.format(filename))
         with open(filename, 'r') as f:
             reader = csv.DictReader(f, fieldnames=['word','frequency'])
             frequencies = {}
@@ -45,40 +40,30 @@ def frequencies_from_file(filename=_frequencies_csv, filter_words=None):
                 value = int(row['frequency'])
                 frequencies[row['word']] = value
                 total += value
-            log.debug('read {} entries'.format(len(frequencies)))
             return (frequencies, total)
     except Exception as err:
-        log.error(err)
         return ({}, 0)
 
 
 def frequencies_from_pickle(filename=_frequencies_pickle, filter_words=None):
-    log = Logger().get_log()
     try:
-        log.debug('reading word frequencies from pickle file {}'.format(filename))
         with open(filename, 'rb') as saved_elements:
             frequencies = pickle.load(saved_elements)
             total = pickle.load(saved_elements)
             return (frequencies, total)
     except Exception as err:
-        log.error('unpickle failed for {}'.format(filename))
-        log.error(err)
         return ({}, None)
 
 
 def save_frequencies_to_pickle(frequencies, total, filename=_frequencies_pickle):
-    log = Logger().get_log()
     try:
-        log.debug('saving frequencies to pickle file {}'.format(filename))
         with open(filename, 'wb') as pickle_file:
             pickle.dump(frequencies, pickle_file)
             pickle.dump(total, pickle_file)
     except IOError as err:
-        log.error('encountered error trying to dump pickle {}'.format(filename))
-        log.error(err)
+        raise SystemExit('encountered error trying to dump pickle {}'.format(filename))
     except pickle.PickleError as err:
-        log.error('pickling error for {}'.format(filename))
-        log.error(err)
+        raise SystemExit('pickling error for {}'.format(filename))
 
 
 def init_word_frequencies():
@@ -90,9 +75,7 @@ def init_word_frequencies():
             (_raw_frequencies, _total_frequency) = frequencies_from_file()
             save_frequencies_to_pickle(_raw_frequencies, _total_frequency)
     except:
-        log = Logger().get_log()
-        log.error('unable to initialize word frequencies:')
-        log.error(err)
+        raise SystemExit('unable to initialize word frequencies:')
     # _interpolated = interp1d([0, total], [0, 1])
 
 
