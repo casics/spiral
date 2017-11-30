@@ -67,3 +67,4 @@ __pycache__/
 
 build
 dist
+cloison.egg-info
