@@ -1,22 +1,8 @@
-#!/usr/bin/env python3
-#
-# @file    id_splitters.py
-# @brief   ID splitters
-# @author  Michael Hucka
-#
-# <!---------------------------------------------------------------------------
-# Copyright (C) 2015 by the California Institute of Technology.
-# This software is part of CASICS, the Comprehensive and Automated Software
-# Inventory Creation System.  For more information, visit http://casics.org.
-# ------------------------------------------------------------------------- -->
+'''
+simple_splitters: simple identifier splitters
+'''
 
 import re
-import sys
-
-sys.path.append('../common')
-
-from utils import *
-from logger import *
 
 
 # Delimiter-based splitter

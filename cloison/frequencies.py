@@ -1,14 +1,6 @@
-#!/usr/bin/env python3.4
-#
-# @file    frequencies.py
-# @brief   Code to handle word frequencies
-# @author  Michael Hucka
-#
-# <!---------------------------------------------------------------------------
-# Copyright (C) 2015 by the California Institute of Technology.
-# This software is part of CASICS, the Comprehensive and Automated Software
-# Inventory Creation System.  For more information, visit http://casics.org.
-# ------------------------------------------------------------------------- -->
+'''
+frequencies: code to handle word frequencies
+'''
 
 import csv
 import enchant
@@ -21,9 +13,7 @@ import sys
 
 sys.path.append('../common')
 
-from utils import *
 from logger import *
-from simple_splitters import simple_split
 
 
 # Global variables.
