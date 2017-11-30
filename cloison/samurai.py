@@ -18,11 +18,9 @@ import re
 from   scipy.interpolate import interp1d
 import sys
 
-sys.path.append('../common')
-
-from logger import *
-from frequencies import *
-from simple_splitters import simple_split
+from .logger import *
+from .frequencies import *
+from .simple_splitters import simple_split
 
 
 # Global constants.
