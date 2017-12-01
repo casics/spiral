@@ -1,15 +1,15 @@
 # =============================================================================
 # @file    __version__.py
-# @brief   CASICS Cloison version info
+# @brief   CASICS Spiral version info
 # @author  Michael Hucka <mhucka@caltech.edu>
 # @license Please see the file named LICENSE in the project directory
-# @website https://github.com/casics/cloison
+# @website https://github.com/casics/spiral
 # =============================================================================
 
 __version__     = '1.0.0'
-__title__       = 'Cloison'
-__description__ = 'CLeaver Of Identifiers in SOurce code coNtent'
-__url__         = 'https://github.com/casics/cloison'
+__title__       = 'Spiral'
+__description__ = 'SPlitters for IdentifieRs: A Library'
+__url__         = 'https://github.com/casics/spiral'
 __author__      = 'Michael Hucka <mhucka@caltech.edu>'
 __email__       = 'casics-team@googlegroups.com'
 __license__     = 'GNU General Public License, version 3.0'
