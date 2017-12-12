@@ -1,26 +1,121 @@
-#!/usr/bin/env python3.4
-#
-# @file    samurai.py
-# @brief   Implementation of the Samurai algorithm for identifier splitting
-# @author  Michael Hucka
-#
-# <!---------------------------------------------------------------------------
-# Copyright (C) 2015 by the California Institute of Technology.
-# This software is part of CASICS, the Comprehensive and Automated Software
-# Inventory Creation System.  For more information, visit http://casics.org.
-# ------------------------------------------------------------------------- -->
+'''ronin: Modified version of the Samurai algorithm for identifier splitting
 
-import csv
+Introduction
+------------
+
+Natural language processing (NLP) methods are increasingly being applied to
+source code analysis for various purposes.  The methods rely on terms
+(identifiers and other textual strings) extracted from program source code
+and comments.  The methods often work better if, instead of raw identifiers,
+real words are used as features; that is, "get" and "string" are often better
+features for NLP tools than an identifier "getString".  This leads to the
+need for automated methods for splitting identifiers of classes, functions,
+variables, and other entities into word-like constituents. A number of
+methods have been proposed an implemented to perform identifier splitting.
+
+Ronin is a Python module that implements a modified version of a splitter
+known as Samurai, published by Eric Enslen, Emily Hill, Lori Pollock and
+K. Vijay-Shanker from the University of Delaware in 2009.
+
+  Enslen, E., Hill, E., Pollock, L., & Vijay-Shanker, K. (2009).  Mining
+  source code to automatically split identifiers for software analysis.  In
+  Proceedings of the 6th IEEE International Working Conference on Mining
+  Software Repositories (MSR'09) (pp. 71-80).
+
+The ronin algorithm is very similar to Samurai, and only introduces the
+following modifications (1) if the given string S is a single character,
+return it right away; (2) if the given string S is a common dictionary word,
+return it without attempting to split it; (3) when checking if the left side
+of a candidate split is a prefix, also check if the right side is a common
+dictionary word; and (4) when calculating the score for to_split_l and
+to_split_r, adjust the score slightly based on whether a word is a common
+dictionary word or not.
+
+Usage
+-----
+
+Note: for fastest performance, using the optimization options provided by the
+Python interpreter (i.e., the options -O or -OO).
+
+To use this module in a Python program, simply import Spiral and then call
+ronin_split() with a string. For example,
+
+    from spiral import ronin_split
+    result = ronin_split('someidentifier')
+
+The function ronin_split produces a list of strings as its output.  It will
+do its best-guess at how a given identifier should be split using a built-in
+table of term frequencies, prefixes, suffixes, and an English dictionary.
+
+Tracing the algorithm
+---------------------
+
+To print what the splitter is doing while processing a given string, you can
+turn on logging by setting the logging level to "logging.DEBUG".  Search for
+logging.basicConfig(...) in the code below and change the line
+    logging.basicConfig(level=logging.INFO,  format='samurai: %(message)s')
+to
+    logging.basicConfig(level=logging.DEBUG, format='samurai: %(message)s')
+Logging will be printed to the standard output stream.  Note: this will only
+work if you did not use the -O option to the Python interpreter.
+
+This module wraps all logging code with the Python __debug__ compile-time
+symbol, so that you can use the -O flag to Python to make it omit the code
+completely.  This is more efficient than simply setting the logging level.
+
+Explanation of the name
+-----------------------
+
+The name "ronin" is a play on the use of the name "Samurai" by Enslen et al.
+(2009) for their identifier splitting algorithm.  Ronin is almost identical
+to Samurai, but it would be inappropriate to call this implementation Samurai
+too.  In an effort to imply the lineage of this modified algorithm, I chose
+"ronin" (a name referring to a drifter samurai without a master, during the
+Japanese feudal period).
+
+Authors
+-------
+
+Michael Hucka <mhucka@caltech.edu>
+
+Copyright
+---------
+
+Copyright (c) 2017 by the California Institute of Technology.  This software
+was developed as part of the CASICS project, the Comprehensive and Automated
+Software Inventory Creation System.  For more, visit http://casics.org.
+
+'''
+
 import enchant
 import math
-import plac
+import os
 import re
-from   scipy.interpolate import interp1d
 import sys
 
-from .logger import *
-from .frequencies import *
-from .simple_splitters import simple_split
+# NOTE: to turn on debugging, make sure python -O was *not* used when this
+# file was byte-compiled, and then change logging.INFO to logging.DEBUG below.
+# Conversely, to optimize out all the debugging code, use python -O or -OO
+# and everything inside "if __debug__" blocks will be entirely compiled out.
+if __debug__:
+    import logging
+    logging.basicConfig(level=logging.INFO, format='samurai: %(message)s')
+    logger = logging.getLogger('')
+    def log(s, *other_args): logger.debug(s.format(*other_args))
+
+try:
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+except:
+    sys.path.append("..")
+
+try:
+    from .frequencies import *
+    from .simple_splitters import simple_split
+    from .utils import msg
+except:
+    from frequencies import *
+    from simple_splitters import simple_split
+    from utils import msg
 
 
 # Global constants.
@@ -109,63 +204,65 @@ suffix_list = ['a', 'ac', 'acea', 'aceae', 'acean', 'aceous', 'ade', 'aemia',
 # Main functions.
 # .............................................................................
 
-def samurai_split(identifier, log=Logger().get_log()):
+def ronin_split(identifier):
     splits = []
-    log.debug('splitting {}'.format(identifier))
+    if __debug__: log('splitting {}'.format(identifier))
     for s in simple_split(identifier):
         # Look for upper-to-lower case transitions
         transition = re.search(r'[A-Z][a-z]', s)
         if not transition:
-            log.debug('no upper-to-lower case transition in {}'.format(s))
+            if __debug__: log('no upper-to-lower case transition in {}', s)
             parts = [s]
         else:
             i = transition.start(0)
-            log.debug('case transition: {}{}'.format(s[i], s[i+1]))
+            if __debug__: log('case transition: {}{}', s[i], s[i+1])
             if i > 0:
                 camel_score = score(s[i:])
-                log.debug('"{}" score {}'.format(s[i:], camel_score))
+                if __debug__: log('"{}" score {}', s[i:], camel_score)
             else:
                 camel_score = score(s)
-                log.debug('"{}" score {}'.format(s, camel_score))
+                if __debug__: log('"{}" score {}', s, camel_score)
             alt = s[i+1:]
             alt_score = score(alt)
-            log.debug('"{}" alt score {}'.format(alt, alt_score))
+            if __debug__: log('"{}" alt score {}', alt, alt_score)
             if camel_score > rescale(alt, alt_score):
-                log.debug('{} > {} ==> better to include uppercase letter'
-                          .format(camel_score, rescale(alt, alt_score)))
+                if __debug__: log('{} > {} ==> better to include uppercase letter',
+                                  camel_score, rescale(alt, alt_score))
                 if i > 0:
                     parts = [s[0:i], s[i:]]
                 else:
                     parts = [s]
             else:
-                log.debug('not better to include uppercase letter')
+                if __debug__: log('not better to include uppercase letter')
                 parts = [s[0:i+1], s[i+1:]]
-            log.debug('split outcome: {}'.format(parts))
+            if __debug__: log('split outcome: {}', parts)
         splits = splits + parts
 
-    log.debug('turning over to same_case_split: {}'.format(splits))
+    if __debug__: log('turning over to same_case_split: {}', splits)
     results = []
     for token in splits:
-        log.debug('splitting {}'.format(token))
+        if __debug__: log('splitting {}', token)
         results = results + same_case_split(token, score(token))
-    log.debug('final results: {}'.format(results))
+    if __debug__: log('final results: {}', results)
     return results
 
 
-def same_case_split(s, score_ns=0.0000005, log=Logger().get_log()):
+def same_case_split(s, score_ns=0.0000005):
     '''Modified version of sameCaseSplit() from the paper by Enslen et al.
     Modifications: (1) if the given string 's' is a single character, return
     it right away; (2) if the given string 's' is a common dictionary word,
-    return it without splitting it; and (3) when checking if the left side of
+    return it without splitting it; (3) when checking if the left side of
     a candidate split is a prefix, also check if the right side is a common
-    dictionary word.
+    dictionary word; and (4) when calculating the score for to_split_l and
+    to_split_r, adjust the score slightly, based on whether a word is a common
+    dictionary word or not.
     '''
 
     if len(s) < 2:
-        log.debug('"{}" cannot be split; returning as-is'.format(s))
+        if __debug__: log('"{}" cannot be split; returning as-is', s)
         return [s]
     elif len(s) > 1 and in_dictionary(s):
-        log.debug('"{}" is a dictionary word; returning as-is'.format(s))
+        if __debug__: log('"{}" is a dictionary word; returning as-is', s)
         return [s]
 
     split     = None
@@ -173,7 +270,7 @@ def same_case_split(s, score_ns=0.0000005, log=Logger().get_log()):
     i         = 0
     max_score = -1
     threshold = max(score(s), score_ns)
-    log.debug('threshold score = {}'.format(threshold))
+    if __debug__: log('threshold score = {}', threshold)
     while i < n:
         left       = s[0:i]
         right      = s[i:n]
@@ -183,34 +280,30 @@ def same_case_split(s, score_ns=0.0000005, log=Logger().get_log()):
         to_split_l = rescale(left, score_l) > threshold
         to_split_r = rescale(right, score_r) > threshold
 
-        log.debug('|{} : {}| l = {} r = {} split_l = {:1b} split_r = {:1b} prefix = {:1b} threshold = {} max_score = {}'
-                  .format(left, right, rescale(left, score_l), rescale(right, score_r), to_split_l, to_split_r, prefix, threshold, max_score))
+        if __debug__: log('|{} : {}| l = {} r = {} split_l = {:1b} split_r = {:1b} prefix = {:1b} threshold = {} max_score = {}',
+                          left, right, rescale(left, score_l), rescale(right, score_r), to_split_l, to_split_r, prefix, threshold, max_score)
 
         if not prefix and to_split_l and to_split_r:
-            log.debug('--> case 1')
+            if __debug__: log('--> case 1')
             if (score_l + score_r) > max_score:
-                log.debug('({} + {}) > {}'.format(score_l, score_r, max_score))
+                if __debug__: log('({} + {}) > {}', score_l, score_r, max_score)
                 max_score = score_l + score_r
                 split = [left, right]
-                log.debug('case 1 split result: {}'.format(split))
+                if __debug__: log('case 1 split result: {}', split)
             else:
-                log.debug('no split for case 1')
+                if __debug__: log('no split for case 1')
         elif not prefix and to_split_l:
-            log.debug('--> case 2 -- recursive call on "{}"'.format(s[i:n]))
+            if __debug__: log('--> case 2 -- recursive call on "{}"', s[i:n])
             tmp = same_case_split(right, score_ns)
             if tmp[0] != right:
                 split = [left] + tmp
-                log.debug('case 2 split result: {}'.format(split))
+                if __debug__: log('case 2 split result: {}', split)
             else:
-                log.debug('no split for case 2')
+                if __debug__: log('no split for case 2')
         i += 1
     result = split if split else [s]
-    log.debug('<-- returning {}'.format(result))
+    if __debug__: log('<-- returning {}', result)
     return result
-
-
-def mixed_case_split(identifier):
-    return samurai_split(identifier)
 
 
 # Utilities.
@@ -241,69 +334,3 @@ def score(w):
     f = word_frequency(w)
     return 0 if f < 30 else f
     # return 0 if not w else word_frequency(w)
-
-
-# Quick test interface.
-# .............................................................................
-
-
-def run_test(debug=False, loglevel='info'):
-    '''Samurai id splitting algorithm.'''
-    log = Logger(os.path.splitext(sys.argv[0])[0], console=True).get_log()
-    if debug:
-        log.set_level('debug')
-    else:
-        log.set_level(loglevel)
-
-    init_word_frequencies()
-    print(mixed_case_split('somevar'))
-    print(mixed_case_split('itervalues'))
-    print(mixed_case_split('autocommit'))
-    print(mixed_case_split('httpexceptions'))
-    print(mixed_case_split('argv'))
-    print(mixed_case_split('usage_getdata'))
-    print(mixed_case_split('NSTEMPLATEMATCHREFSET_METER'))
-    print(mixed_case_split('GPSmodule'))
-    print(mixed_case_split('bigTHING'))
-    print(mixed_case_split('ABCFooBar'))
-    print(mixed_case_split('getMAX'))
-    print(mixed_case_split('FOOOBAR'))
-    print(mixed_case_split('SqlList'))
-    print(mixed_case_split('ASTVisitor'))
-    print(mixed_case_split('finditer'))
-    print(mixed_case_split('isnumber'))
-    print(mixed_case_split('isbetterfile'))
-    print(mixed_case_split('threshold'))
-    print(mixed_case_split('iskeyword'))
-    print(mixed_case_split('fileio'))
-    print(mixed_case_split('initdb'))
-    print(mixed_case_split('terraindata'))   # terrain data
-    print(mixed_case_split('treservations')) # treservations
-    print(mixed_case_split('trigname'))
-    print(mixed_case_split('undirected'))
-    print(mixed_case_split('usemap'))
-    print(mixed_case_split('versionend'))
-    print(mixed_case_split('vframe'))
-    print(mixed_case_split('vqgen')) # vq gen
-    print(mixed_case_split('sampfmt')) # samp fmt
-    print(mixed_case_split('sampy'))   # sampy
-    print(mixed_case_split('readcmd'))
-    print(mixed_case_split('uval'))
-    print(mixed_case_split('updatecpu'))
-    print(mixed_case_split('textnode'))
-    print(mixed_case_split('sandcx')) # sandcx
-    print(mixed_case_split('mpegts')) # mpeg ts
-    print(mixed_case_split('mixmonitor'))
-    print(mixed_case_split('imhand')) # im hand
-    print(mixed_case_split('connectpath'))
-
-    if debug:
-        import ipdb; ipdb.set_trace()
-
-run_test.__annotations__ = dict(
-    debug    = ('drop into ipdb after parsing',     'flag',   'd'),
-    loglevel = ('logging level: "debug" or "info"', 'option', 'L'),
-)
-
-if __name__ == '__main__':
-    plac.call(run_test)
