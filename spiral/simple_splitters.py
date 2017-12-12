@@ -1,8 +1,23 @@
 '''
 simple_splitters: simple identifier splitters
+
+This exports a number of simple splitter functions whose behaviors are sightly
+different depending on what assumptions are made about identifier patterns.
+None of these make inferences or expand identifiers.
 '''
 
 import re
+import sys
+
+try:
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+except:
+    sys.path.append("..")
+
+try:
+    from .utils import flatten
+except:
+    from utils import flatten
 
 
 # Delimiter-based splitter
@@ -49,7 +64,7 @@ def safe_camelcase_split(identifier):
 # Safe simple splitter
 # .............................................................................
 
-_hard_split_chars = '_.:0123456789'
+_hard_split_chars = '~_.:0123456789'
 _hard_splitter = str.maketrans(_hard_split_chars, ' '*len(_hard_split_chars))
 
 def safe_simple_split(identifier):
@@ -58,7 +73,11 @@ def safe_simple_split(identifier):
     means it will split fooBarBaz into 'foo', 'Bar' and 'Baz', and foo2bar
     into 'foo' and 'bar, but it won't change SQLlite or similar identifiers.
     Does not split identifies that have multiple adjacent uppercase
-    letters.
+    letters anywhere in them, because doing so is risky if the uppercase
+    letters are not an acronym.  Example: aFastNDecoder -> ['aFastNDecoder'].
+    Contrast this to simple_split('aFastNDecoder'), which will produce
+    ['a', 'Fast', 'NDecoder'] even though "NDecoder" may be more properly split
+    as 'N' 'Decoder'.
     '''
     parts = str.translate(identifier, _hard_splitter).split(' ')
     return list(flatten(safe_camelcase_split(token) for token in parts))
@@ -66,9 +85,6 @@ def safe_simple_split(identifier):
 
 # Not-so-safe simple splitter
 # .............................................................................
-
-_hard_split_chars = '~_.:0123456789'
-_hard_splitter = str.maketrans(_hard_split_chars, ' '*len(_hard_split_chars))
 
 def simple_split(identifier):
     '''Split identifiers by hard delimiters such as underscores, digits, and
