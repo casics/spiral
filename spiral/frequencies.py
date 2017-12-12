@@ -7,7 +7,6 @@ import enchant
 import math
 import os
 import pickle
-import plac
 import re
 from   scipy.interpolate import interp1d
 import sys
