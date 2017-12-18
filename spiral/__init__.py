@@ -16,4 +16,5 @@ from .simple_splitters import delimiter_split, digit_split, safe_camelcase_split
 from .simple_splitters import safe_simple_split, simple_split
 
 # Advanced splitters.
+from .samurai import samurai_split, init_samurai
 from .ronin import ronin_split
