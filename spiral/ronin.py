@@ -173,7 +173,7 @@ to have quite high frequency scores, and as a consequence, cause the splitter
 to be overly-aggressive in accepting some splits.
 '''
 
-_IGNORED_FREQ_THRESHOLD = 10
+_LOW_FREQUENCY_CUTOFF = 10
 '''Cut-off value below which a frequency in the frequency table is treated as
 being 0.  This needs to have a value greater than 0 to have any effect.  This
 threshold tends to counteract noisiness in global frequency tables created from
@@ -450,7 +450,7 @@ class Ronin(object):
     def _rescale(self, token, value):
         if len(token) == 1:
             return self._len_1_string_score
-        if value <= _IGNORED_FREQ_THRESHOLD:
+        if value <= _LOW_FREQUENCY_CUTOFF:
             return 0
         if self._in_dictionary(token):
             return value
