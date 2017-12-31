@@ -1,5 +1,4 @@
-'''
-Ronin: identifier splitter based on the Samurai algorithm
+'''Ronin: identifier splitter based on the Samurai algorithm
 
 Introduction
 ------------
@@ -15,17 +14,21 @@ variables, and other entities into word-like constituents.  A number of
 methods have been proposed an implemented to perform identifier splitting.
 
 Ronin is a Python module that implements a variation of the algorithm known
-as Samurai, published by Eric Enslen, Emily Hill, Lori Pollock and
-K. Vijay-Shanker from the University of Delaware in 2009.
+as Samurai, described in the following paper:
 
   Enslen, E., Hill, E., Pollock, L., & Vijay-Shanker, K. (2009).  Mining
   source code to automatically split identifiers for software analysis.  In
   Proceedings of the 6th IEEE International Working Conference on Mining
   Software Repositories (MSR'09) (pp. 71-80).
 
-The implementation in the present Python module was created by the author
-from the description of the algorithm published in the paper, then modified
-based on ideas derived from experiences with Samurai.
+The implementation of Ronin in the present Python module was created by the
+author from the description of the algorithm published in the paper, then
+modified based on ideas derived from experiences with Samurai.  A significant
+goal in Ronin was to produce a splitter that had acceptable performance
+without having to use a local frequency table derived from a source code base
+being processed.  Ronin uses only a global frequency table derived from
+mining tens of thousands of GitHub project repositories containing Python
+source code files.
 
 Usage
 -----
@@ -34,9 +37,9 @@ Note #1: for fastest performance, using the optimization options provided by
 the Python interpreter (i.e., the options -O or -OO).
 
 Note #2: If you do not call init(...) separately, then the first time you
-call ronin.split(...) it will call init(...) itself.  This will make split(...)
-take much longer to run than subsequent invocation.  Please rest assured that
-this is only a one-time startup cost.
+call ronin.split(...) it will call init(...) itself.  This will make the
+first call to split(...)  take much longer to run than subsequent invocation.
+Please rest assured that this is only a one-time startup cost.
 
 The simplest way to use this module in a Python program is to import the
 module from the Spiral package and then call ronin.split() with a string. For
@@ -48,8 +51,8 @@ example,
 The function split(...) produces a list of strings as its output.  It will do
 its best-guess at how a given identifier should be split using a built-in
 table of term frequencies, prefixes, and suffixes.  The built-in table of
-term frequencies came from an analysis of 20,000 randomly selected software
-projects in GitHub that contained at least one Python source code file.
+term frequencies came from an analysis of randomly selected software projects
+in GitHub that contained at least one Python source code file.
 
 Ronin's performance can be tuned by providing it with a project-specific table
 of term frequencies.  If you have a set of frequencies for your project, you
@@ -84,6 +87,11 @@ identifiers of classes, functions, variables, etc., then splitting them to
 produce individual identifier fragments, and finally curating the result
 manually.
 
+Finally, init() accepts additional arguments for tuning some other parameters
+that control how it calculates costs of splitting identifiers.  The default
+values of the parameters were determined using numerical optimization
+methods.  Please see the documentation for init() for more information.
+
 Tracing the algorithm
 ---------------------
 
@@ -106,11 +114,11 @@ Explanation of the name
 -----------------------
 
 The name "Ronin" is a play on the use of the name "Samurai" by Enslen et al.
-(2009) for their identifier splitting algorithm.  Ronin is almost identical
-to Samurai, but it would be inappropriate to call this implementation Samurai
-too.  In an effort to imply the lineage of this modified algorithm, I chose
-"ronin" (a name referring to a drifter samurai without a master, during the
-Japanese feudal period).
+(2009) for their identifier splitting algorithm.  The bulk of Ronin is
+identical to Samurai, but it would be inappropriate to call this
+implementation Samurai too.  In an effort to imply the lineage of this
+modified algorithm, I chose "ronin" (a name referring to a drifter samurai
+without a master, during the Japanese feudal period).
 
 Authors
 -------
@@ -158,27 +166,6 @@ except:
 
 # Global constants.
 # .............................................................................
-
-_LEN_1_MIN_FACTOR = 0.02
-'''Factor used in a formula to calculate the score given to all single-character
-strings.  The formula sets the score value based on the values of all strings
-in the frequency table, as follows:
-
-   score = _LEN_1_MIN_FACTOR*(min(frequency of all single-char strings))
-
-This score is then used anytime a string of length 1 is score; the actual score
-of the string in the frequency table is ignored when splitting identifiers.
-This approach is meant to compensate for the fact that single characters tend
-to have quite high frequency scores, and as a consequence, cause the splitter
-to be overly-aggressive in accepting some splits.
-'''
-
-_LOW_FREQUENCY_CUTOFF = 10
-'''Cut-off value below which a frequency in the frequency table is treated as
-being 0.  This needs to have a value greater than 0 to have any effect.  This
-threshold tends to counteract noisiness in global frequency tables created from
-a large number of disparate sofware projects.
-'''
 
 # If the caller doesn't supply a frequency table, we use a default one.
 # The file needs to be kept in the same directory as this Python module file.
@@ -268,13 +255,19 @@ _SUFFIX_LIST = ['a', 'ac', 'acea', 'aceae', 'acean', 'aceous', 'ade', 'aemia',
 # .............................................................................
 
 class Ronin(object):
-    _global_freq        = None
-    _local_freq         = None
     _dictionary         = None
     _stemmer            = None
-    _len_1_string_score = 50
 
-    def init(self, local_freq=None, global_freq=None):
+    _global_freq        = None
+    _local_freq         = None
+    _clamp_len_1_scores = True
+    _len_1_score        = None
+    _length_cutoff      = None
+    _low_freq_cutoff    = None
+    _rescale_exponent   = None
+
+    def init(self, local_freq=None, global_freq=None, len_1_factor=0,
+             low_frequency_cutoff=33, length_cutoff=2, rescale_exponent=0.535):
         '''Initialize internal frequency files for the Ronin split() function.
         Parameter 'local_freq' should be a dictionary where the keys are the
         terms and the values are integers representing the number of times
@@ -284,7 +277,53 @@ class Ronin(object):
         frequencies of all terms in a large sample of code bases.
 
         Note: the first time this function is called, it will take noticeable
-        time because it loads a number of data files.
+        time because it will load a large default global frequency table
+        (unless one is provided to override the default).
+
+        This initialization function also accepts a number of optional
+        arguments that control internal parameter values.  Their default
+        values were determined by numerical optimization in conjunction with
+        the default global frequency table shipped with Ronin.  In case you
+        want to try searching for other values for a particular application,
+        init() offers the following adjustable parameters, but beware that the
+        values for optimal performance depend on the specific global frequency
+        table you use.
+
+         * 'len_1_factor': sets the value of a factor used in a formula to
+           calculate a fixed score given to all single-character strings.
+           Setting this value to 0 makes all single-character strings have a
+           score of 0.  Setting this value to -1 causes the formula to be
+           ignored and the natural score of each length-1 string to be used
+           instead.  Setting this value to something greater than 0 sets the
+           score of every length-1 string to a value computed by the formula
+
+             score = len_1_factor*(min(every frequency of all 1-char strings))
+
+           The resulting value is then used anytime a string of length 1 is
+           being scored; in other words, the actual frequency of the string
+           in the frequency table is ignored when splitting identifiers, and
+           the score used is this value instead.  The approach of clamping
+           the scores of single-character strings is meant to compensate for
+           the fact that single characters tend to have quite high frequency
+           scores, and as a consequence, cause the splitter to be
+           overly-aggressive in accepting some splits.
+
+         * 'low_frequency_cutoff': a cut-off value below which a given
+           frequency value in the frequency table is treated as being 0.
+           This needs to have a value greater than 0 to have any effect.  For
+           example, if the cutoff is set to 10, any frequency less than or
+           equal to 10 will be given a score of 0.  This threshold tends to
+           counteract noisiness in global frequency tables created from a
+           large number of disparate sofware projects.
+
+         * 'length_cutoff': sets a lower limit for string lengths, such
+           that the score for any string shorter or equal to 'length_cutoff'
+           will be set to 0 instead.
+
+         * 'rescale_exponent': the value of an exponent in the formula used
+           to adjust the frequency scores before they are used in the splitter
+           algorithm.  See the internal function _rescale() to understand how
+           this is used.
         '''
         if __debug__: log('init()')
         if local_freq:
@@ -304,12 +343,21 @@ class Ronin(object):
             from nltk.corpus import words as nltk_words
             from nltk.corpus import wordnet as nltk_wordnet
             from nltk.stem import SnowballStemmer
-
+            # Note: I also tried adding the words from /usr/share/dict/web,
+            # but the only additional words it had that were not already in
+            # the next two dicts were people's proper names. Not useful.
             self._dictionary = set(nltk_words.words())
             self._dictionary.update(nltk_wordnet.all_lemma_names())
             self._stemmer = SnowballStemmer('english')
-        self._len_1_string_score = (_LEN_1_MIN_FACTOR * min(
-            f for s, f in self._global_freq.items() if len(s) == 1))
+
+        self._low_freq_cutoff = low_frequency_cutoff
+        self._length_cutoff = length_cutoff
+        self._rescale_exponent = rescale_exponent
+        if len_1_factor < 0:
+            self._clamp_len_1_scores = False
+        else:
+            self._len_1_score = (len_1_factor * min(
+                f for s, f in self._global_freq.items() if len(s) == 1))
 
 
     def split(self, identifier):
@@ -379,9 +427,8 @@ class Ronin(object):
 
 
     def _same_case_split(self, s, score, score_ns=0.0000005):
-        # if len(s) < 2:
-        #     if __debug__: log('"{}" cannot be split; returning as-is', s)
-        #     return [s]
+        if self._in_dictionary(s):
+            return [s]
 
         split     = None
         n         = len(s)
@@ -447,17 +494,21 @@ class Ronin(object):
         return scoring_function
 
 
-    def _rescale(self, token, value):
+    def _rescale(self, token, score_value):
         if len(token) == 1:
-            return self._len_1_string_score
-        if value <= _LOW_FREQUENCY_CUTOFF:
+            if self._clamp_len_1_scores:
+                return self._len_1_score
+        elif len(token) <= self._length_cutoff:
             return 0
-        if self._in_dictionary(token):
-            return value
-        return math.sqrt(value)
+
+        if score_value <= self._low_freq_cutoff:
+            return 0
+        else:
+            return math.pow(score_value, self._rescale_exponent)
 
 
     def _in_dictionary(self, word):
+        word = word.lower()
         return word in self._dictionary or self._stemmer.stem(word) in self._dictionary
 
 
