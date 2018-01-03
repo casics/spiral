@@ -157,11 +157,9 @@ except:
 try:
     from .frequencies import *
     from .simple_splitters import simple_split
-    from .utils import msg
 except:
     from frequencies import *
     from simple_splitters import simple_split
-    from utils import msg
 
 
 # Global constants.
@@ -255,19 +253,20 @@ _SUFFIX_LIST = ['a', 'ac', 'acea', 'aceae', 'acean', 'aceous', 'ade', 'aemia',
 # .............................................................................
 
 class Ronin(object):
-    _dictionary         = None
-    _stemmer            = None
+    _dictionary       = None
+    _stemmer          = None
 
-    _global_freq        = None
-    _local_freq         = None
-    _clamp_len_1_scores = True
-    _len_1_score        = None
-    _length_cutoff      = None
-    _low_freq_cutoff    = None
-    _rescale_exponent   = None
+    _global_freq      = None
+    _local_freq       = None
 
-    def init(self, local_freq=None, global_freq=None, len_1_factor=0,
-             low_frequency_cutoff=33, length_cutoff=2, rescale_exponent=0.535):
+    _length_cutoff    = None
+    _low_freq_cutoff  = None
+    _rescale_exponent = None
+    _permissive       = True
+
+    def init(self, local_freq=None, global_freq=None,
+             low_frequency_cutoff=1800, length_cutoff=2,
+             rescale_exponent=0.415, permissive=True):
         '''Initialize internal frequency files for the Ronin split() function.
         Parameter 'local_freq' should be a dictionary where the keys are the
         terms and the values are integers representing the number of times
@@ -286,27 +285,12 @@ class Ronin(object):
         the default global frequency table shipped with Ronin.  In case you
         want to try searching for other values for a particular application,
         init() offers the following adjustable parameters, but beware that the
-        values for optimal performance depend on the specific global frequency
-        table you use.
+        values for optimal performance depend very much on the specific global
+        frequency table you use:
 
-         * 'len_1_factor': sets the value of a factor used in a formula to
-           calculate a fixed score given to all single-character strings.
-           Setting this value to 0 makes all single-character strings have a
-           score of 0.  Setting this value to -1 causes the formula to be
-           ignored and the natural score of each length-1 string to be used
-           instead.  Setting this value to something greater than 0 sets the
-           score of every length-1 string to a value computed by the formula
-
-             score = len_1_factor*(min(every frequency of all 1-char strings))
-
-           The resulting value is then used anytime a string of length 1 is
-           being scored; in other words, the actual frequency of the string
-           in the frequency table is ignored when splitting identifiers, and
-           the score used is this value instead.  The approach of clamping
-           the scores of single-character strings is meant to compensate for
-           the fact that single characters tend to have quite high frequency
-           scores, and as a consequence, cause the splitter to be
-           overly-aggressive in accepting some splits.
+         * 'length_cutoff': sets a lower limit for string lengths, such
+           that the score for any string shorter or equal to 'length_cutoff'
+           will be set to 0 instead.
 
          * 'low_frequency_cutoff': a cut-off value below which a given
            frequency value in the frequency table is treated as being 0.
@@ -316,14 +300,19 @@ class Ronin(object):
            counteract noisiness in global frequency tables created from a
            large number of disparate sofware projects.
 
-         * 'length_cutoff': sets a lower limit for string lengths, such
-           that the score for any string shorter or equal to 'length_cutoff'
-           will be set to 0 instead.
-
          * 'rescale_exponent': the value of an exponent in the formula used
            to adjust the frequency scores before they are used in the splitter
            algorithm.  See the internal function _rescale() to understand how
            this is used.
+
+         * 'permissive': when True, this makes Ronin use an alternate splitting
+           condition in _same_case_split() that is more "relaxed" than when the
+           value is False.  In the author's experience, True produces slightly
+           more natural splits, but to be fair, what constitutes "natural" to
+           the author may not be natural to other people.  (The original
+           algorithm for Samurai, on which Ronin is based, uses the equivalent
+           of False.)
+
         '''
         if __debug__: log('init()')
         if local_freq:
@@ -338,6 +327,7 @@ class Ronin(object):
             else:
                 raise ValueError('Cannot read default frequencies pickle file "{}"'
                                  .format(_DEFAULT_FREQ_PICKLE))
+
         if not self._dictionary:
             if __debug__: log('initializing dictionary and stemmer')
             from nltk.corpus import words as nltk_words
@@ -353,11 +343,7 @@ class Ronin(object):
         self._low_freq_cutoff = low_frequency_cutoff
         self._length_cutoff = length_cutoff
         self._rescale_exponent = rescale_exponent
-        if len_1_factor < 0:
-            self._clamp_len_1_scores = False
-        else:
-            self._len_1_score = (len_1_factor * min(
-                f for s, f in self._global_freq.items() if len(s) == 1))
+        self._permissive = permissive
 
 
     def split(self, identifier):
@@ -426,13 +412,13 @@ class Ronin(object):
         return results
 
 
-    def _same_case_split(self, s, score, score_ns=0.0000005):
-        if self._in_dictionary(s):
+    def _same_case_split(self, s, score, score_ns=.0000005):
+        n = len(s)
+        if n > 1 and self._in_dictionary(s):
+            if __debug__: log('{} is a dictionary word; using it as-is', s)
             return [s]
-
-        split     = None
-        n         = len(s)
         i         = 0
+        split     = None
         max_score = -1
         threshold = max(score(s), score_ns)
         if __debug__: log('_same_case_split on {}, threshold {}', s, threshold)
@@ -445,12 +431,17 @@ class Ronin(object):
             to_split_l = self._rescale(left, score_l) > threshold
             to_split_r = self._rescale(right, score_r) > threshold
 
-            if __debug__: log('|{} : {}| l = {} r = {} split_l = {:1b} split_r'
-                              ' = {:1b} prefix = {:1b} threshold = {} max_score = {}',
-                              left, right, math.sqrt(score_l), math.sqrt(score_r),
+            if __debug__: log('|{} : {}| score l = {:6d} r = {:6d}'
+                              ' rescaled l = {:.05f} r = {:.05f}'
+                              ' split_l = {:1b} r = {:1b} prefix = {:1b}'
+                              ' th = {} max_score = {}',
+                              left, right, score_l, score_r,
+                              self._rescale(left, score_l),
+                              self._rescale(right, score_r),
                               to_split_l, to_split_r, prefix, threshold, max_score)
 
-            if not prefix and to_split_l and to_split_r:
+            if not prefix and ((self._permissive and (to_split_l or to_split_r))
+                               or (to_split_l and to_split_r)):
                 if __debug__: log('--> case 1')
                 if (score_l + score_r) > max_score:
                     if __debug__: log('({} + {}) > {}', score_l, score_r, max_score)
@@ -490,17 +481,21 @@ class Ronin(object):
                     return local_f + global_f/log_all_freq
         else:
             def scoring_function(w):
-                return self._global_freq[w] if w in self._global_freq else 0
+                if w in self._global_freq:
+                    return self._global_freq[w]
+                else:
+                    w = w.lower()
+                    if w in self._global_freq:
+                        return self._global_freq[w]
+                    else:
+                        return 0
+
         return scoring_function
 
 
     def _rescale(self, token, score_value):
-        if len(token) == 1:
-            if self._clamp_len_1_scores:
-                return self._len_1_score
-        elif len(token) <= self._length_cutoff:
+        if len(token) <= self._length_cutoff:
             return 0
-
         if score_value <= self._low_freq_cutoff:
             return 0
         else:
@@ -509,7 +504,8 @@ class Ronin(object):
 
     def _in_dictionary(self, word):
         word = word.lower()
-        return word in self._dictionary or self._stemmer.stem(word) in self._dictionary
+        return (word in self._dictionary
+                or self._stemmer.stem(word) in self._dictionary)
 
 
     def _is_prefix(self, s):
