@@ -9,12 +9,13 @@
 from .__version__ import *
 
 # Supporting modules.
-from .frequencies import init_word_frequencies
+from .frequencies import frequencies_from_csv_file, frequencies_from_pickle
+from .frequencies import save_frequencies_to_pickle
 
 # Simple splitters.
 from .simple_splitters import delimiter_split, digit_split, safe_camelcase_split
 from .simple_splitters import safe_simple_split, simple_split
 
 # Advanced splitters.
-from .samurai import samurai_split, init_samurai
-from .ronin import ronin_split
+from . import samurai
+from . import ronin
