@@ -249,7 +249,7 @@ class Ronin(object):
 
          * 'min_short_string_freq': minimum frequency of a short string that
            will be accepted.  If a string in the frequency table is shorter
-           than 'length_cutoff' and its frequency value is higher than this,
+           than 'length_cutoff' and its frequency value is lower than this,
            then its value will be taken as 0 instead.
 
          * 'low_freq_cutoff': a cut-off value below which a given
