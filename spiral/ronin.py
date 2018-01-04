@@ -28,7 +28,8 @@ goal in Ronin was to produce a splitter that had acceptable performance
 without having to use a local frequency table derived from a source code base
 being processed.  Ronin uses only a global frequency table derived from
 mining tens of thousands of GitHub project repositories containing Python
-source code files.
+source code files.  It also uses a dictionary of English words (from NLTK) to
+help produce more "natural" splits.
 
 Usage
 -----
@@ -42,8 +43,8 @@ first call to split(...)  take much longer to run than subsequent invocation.
 Please rest assured that this is only a one-time startup cost.
 
 The simplest way to use this module in a Python program is to import the
-module from the Spiral package and then call ronin.split() with a string. For
-example,
+module from the Spiral package and then call ronin.split(...) with a
+string.  For example,
 
     from spiral import ronin
     result = ronin.split('someidentifier')
@@ -51,46 +52,37 @@ example,
 The function split(...) produces a list of strings as its output.  It will do
 its best-guess at how a given identifier should be split using a built-in
 table of term frequencies, prefixes, and suffixes.  The built-in table of
-term frequencies came from an analysis of randomly selected software projects
-in GitHub that contained at least one Python source code file.
+term frequencies came from an analysis of over 46,000 randomly selected
+software projects in GitHub that contained at least one Python source code
+file.
 
-Ronin's performance can be tuned by providing it with a project-specific table
-of term frequencies.  If you have a set of frequencies for your project, you
-can supply them to the function init(...) once, before making any calls to
-split(...).  (This is done so that the cost of computations involved in the
-frequencies is only done once.)  Use the keyword argument 'local_freq'
+Ronin's performance can be tuned by providing it with a different table of
+term frequencies.  If you want to experiment with using a different set of
+global frequencies, you can supply them to the function init(...) once,
+before making any calls to split(...).  (This is done so that the cost of
+computations involved in the frequencies is only done once.)  Use the keyword
+argument 'global_freq':
 
     from spiral import ronin
-    ronin.init(local_freq=myfrequencies)
+    ronin.init(global_freq=myfrequencies)
     result = ronin.split('someidentifier')
 
-The format of the value given to 'local_freq' should be a dictionary where
+The format of the value given to 'global_freq' should be a dictionary where
 the keys are the terms and the values are integers representing the number of
 times the term appears in the code base.  A term that appears once will have
-a value of 1, a term that appears twice will have a value of 2, etc.  Some
-terms for large code bases can have values that go into the hundreds of
-thousands or millions; this is okay, as Ronin will normalize the values.
-(Do NOT normalize the values yourself, as this will confuse the algorithm.)
+a value of 1, a term that appears twice will have a value of 2, etc.  Ronin
+will normalize the values.  (Do NOT normalize the values yourself, as this
+will confuse the algorithm.)  Note that generating the global table is not a
+trivial undertaking.  It requires mining a large number of source code
+repositories to extract identifiers of classes, functions, variables, etc.,
+then splitting them to produce individual identifier fragments, and finally
+curating the result manually.
 
-You can also change the global frequency table that Ronin uses.  This can
-be passed using the keyword argument 'global_freq' to init(...):
-
-    ronin.init(global_freq=globalfrequencies)
-
-or together in combination with a local frequency table,
-
-    ronin.init(global_freq=globalfrequencies, local_freq=projectfrequencies)
-
-Note that generating the global table is not a trivial undertaking.  It
-requires mining a large number of source code repositories to extract
-identifiers of classes, functions, variables, etc., then splitting them to
-produce individual identifier fragments, and finally curating the result
-manually.
-
-Finally, init() accepts additional arguments for tuning some other parameters
-that control how it calculates costs of splitting identifiers.  The default
-values of the parameters were determined using numerical optimization
-methods.  Please see the documentation for init() for more information.
+Finally, init(...) accepts additional arguments for tuning some other
+parameters that control how it calculates costs of splitting identifiers.
+The default values of the parameters were determined using numerical
+optimization methods.  Please see the documentation for init(...) for more
+information.
 
 Tracing the algorithm
 ---------------------
@@ -104,7 +96,10 @@ to
     logging.basicConfig(level=logging.DEBUG, format='ronin: %(message)s')
 
 Logging will be printed to the standard output stream.  Note: this will only
-work if you did not use the -O option to the Python interpreter.
+work if you do NOT use the -O option to the Python interpreter.
+
+Optimization
+------------
 
 This module wraps all logging code with the Python __debug__ compile-time
 symbol, so that you can use the -O flag to Python to make it omit the code
@@ -174,15 +169,22 @@ except:
     _DEFAULT_FREQ_DIR = os.path.dirname('.')
 _DEFAULT_FREQ_PICKLE = os.path.join(_DEFAULT_FREQ_DIR, 'frequencies.pklz')
 '''Pickle file storing the default global frequency table shipped with this
-module.  This constant is only read by Ronin.init().'''
+module.  This constant is only read by Ronin.init(...).'''
 
-# The lists of prefixes and suffixes came from the web page for Samurai,
+# The list of prefixes from the web page for Samurai,
 # https://hiper.cis.udel.edu/Samurai/Samurai.html
 #
 # Enslen, E., Hill, E., Pollock, L., & Vijay-Shanker, K. (2009).
 # Mining source code to automatically split identifiers for software analysis.
 # In Proceedings of the 6th IEEE International Working Conference on Mining
 # Software Repositories (MSR'09) (pp. 71-80).
+#
+# Note: Samurai uses both a list of prefixes and a list of suffixes, but in
+# my testing with Ronin (which has a number of algorithmic changes compared
+# to Samurai), using an optimization approach to find parameter values,
+# Ronin's performance was not improved by using the suffix test.  This may be
+# due to Ronin's use of a dictionary check, which Samurai doesn't use, or due
+# to other changes.  Ronin doesn't use the suffix test for that reason.
 
 _PREFIX_LIST = ['afro', 'ambi', 'amphi', 'ana', 'anglo', 'apo', 'astro', 'bi',
                 'bio', 'circum', 'cis', 'co', 'col', 'com', 'con', 'contra',
@@ -197,57 +199,6 @@ _PREFIX_LIST = ['afro', 'ambi', 'amphi', 'ana', 'anglo', 'apo', 'astro', 'bi',
                 'sur', 'sy', 'syl', 'sym', 'syn', 'tele', 'trans', 'tri',
                 'twi', 'ultra', 'un', 'uni']
 
-_SUFFIX_LIST = ['a', 'ac', 'acea', 'aceae', 'acean', 'aceous', 'ade', 'aemia',
-                'agogue', 'aholic', 'al', 'ales', 'algia', 'amine', 'ana',
-                'anae', 'ance', 'ancy', 'androus', 'andry', 'ane', 'ar',
-                'archy', 'ard', 'aria', 'arian', 'arium', 'ary', 'ase',
-                'athon', 'ation', 'ative', 'ator', 'atory', 'biont', 'biosis',
-                'cade', 'caine', 'carp', 'carpic', 'carpous', 'cele', 'cene',
-                'centric', 'cephalic', 'cephalous', 'cephaly', 'chory',
-                'chrome', 'cide', 'clast', 'clinal', 'cline', 'coccus',
-                'coel', 'coele', 'colous', 'cracy', 'crat', 'cratic',
-                'cratical', 'cy', 'cyte', 'derm', 'derma', 'dermatous', 'dom',
-                'drome', 'dromous', 'eae', 'ectomy', 'ed', 'ee', 'eer', 'ein',
-                'eme', 'emia', 'en', 'ence', 'enchyma', 'ency', 'ene', 'ent',
-                'eous', 'er', 'ergic', 'ergy', 'es', 'escence', 'escent',
-                'ese', 'esque', 'ess', 'est', 'et', 'eth', 'etic', 'ette',
-                'ey', 'facient', 'fer', 'ferous', 'fic', 'fication', 'fid',
-                'florous', 'foliate', 'foliolate', 'fuge', 'ful', 'fy',
-                'gamous', 'gamy', 'gen', 'genesis', 'genic', 'genous', 'geny',
-                'gnathous', 'gon', 'gony', 'grapher', 'graphy', 'gyne',
-                'gynous', 'gyny', 'ia', 'ial', 'ian', 'iana', 'iasis',
-                'iatric', 'iatrics', 'iatry', 'ibility', 'ible', 'ic',
-                'icide', 'ician', 'ick obsolete', 'ics', 'idae', 'ide', 'ie',
-                'ify', 'ile', 'ina', 'inae', 'ine', 'ineae', 'ing', 'ini',
-                'ious', 'isation', 'ise', 'ish', 'ism', 'ist', 'istic',
-                'istical', 'istically', 'ite', 'itious', 'itis', 'ity', 'ium',
-                'ive', 'ization', 'ize', 'kinesis', 'kins', 'latry', 'lepry',
-                'ling', 'lite', 'lith', 'lithic', 'logue', 'logist', 'logy',
-                'ly', 'lyse', 'lysis', 'lyte', 'lytic', 'lyze', 'mancy',
-                'mania', 'meister', 'ment', 'merous', 'metry', 'mo', 'morph',
-                'morphic', 'morphism', 'morphous', 'mycete', 'mycetes',
-                'mycetidae', 'mycin', 'mycota', 'mycotina', 'ness', 'nik',
-                'nomy', 'odon', 'odont', 'odontia', 'oholic', 'oic', 'oid',
-                'oidea', 'oideae', 'ol', 'ole', 'oma', 'ome', 'ont', 'onym',
-                'onymy', 'opia', 'opsida', 'opsis', 'opsy', 'orama', 'ory',
-                'ose', 'osis', 'otic', 'otomy', 'ous', 'para', 'parous',
-                'pathy', 'ped', 'pede', 'penia', 'phage', 'phagia', 'phagous',
-                'phagy', 'phane', 'phasia', 'phil', 'phile', 'philia',
-                'philiac', 'philic', 'philous', 'phobe', 'phobia', 'phobic',
-                'phony', 'phore', 'phoresis', 'phorous', 'phrenia', 'phyll',
-                'phyllous', 'phyceae', 'phycidae', 'phyta', 'phyte',
-                'phytina', 'plasia', 'plasm', 'plast', 'plasty', 'plegia',
-                'plex', 'ploid', 'pode', 'podous', 'poieses', 'poietic',
-                'pter', 'rrhagia', 'rrhea', 'ric', 'ry', 's', 'scopy',
-                'sepalous', 'sperm', 'sporous', 'st', 'stasis', 'stat',
-                'ster', 'stome', 'stomy', 'taxy', 'th', 'therm', 'thermal',
-                'thermic', 'thermy', 'thon', 'thymia', 'tion', 'tome', 'tomy',
-                'tonia', 'trichous', 'trix', 'tron', 'trophic', 'tropism',
-                'tropous', 'tropy', 'tude', 'ty', 'ular', 'ule', 'ure',
-                'urgy', 'uria', 'uronic', 'urous', 'valent', 'virile',
-                'vorous', 'xor', 'y', 'yl', 'yne', 'zoic', 'zoon', 'zygous',
-                'zyme']
-
 
 # Main class
 # .............................................................................
@@ -256,28 +207,31 @@ class Ronin(object):
     _dictionary       = None
     _stemmer          = None
 
-    _global_freq      = None
-    _local_freq       = None
+    _global_freq        = None
+    _length_cutoff      = None
+    _min_short_freq     = None
+    _low_freq_cutoff    = None
+    _normal_exponent    = None
+    _dict_word_exponent = None
+    _permissive         = True
 
-    _length_cutoff    = None
-    _low_freq_cutoff  = None
-    _rescale_exponent = None
-    _permissive       = True
-
-    def init(self, local_freq=None, global_freq=None,
-             low_frequency_cutoff=1800, length_cutoff=2,
-             rescale_exponent=0.415, permissive=True):
+    def init(self, global_freq=None, low_freq_cutoff=1850,
+             length_cutoff=2, min_short_string_freq=500000,
+             normal_exponent=0.25, dict_word_exponent=0.5, permissive=True):
         '''Initialize internal frequency files for the Ronin split() function.
-        Parameter 'local_freq' should be a dictionary where the keys are the
-        terms and the values are integers representing the number of times
-        the term appears in the code base.  A term that appears once will
-        have a value of 1, a term that appears twice will have a value of 2,
-        etc.  Similarly, 'glocal_freq' should be a dictionary for global
-        frequencies of all terms in a large sample of code bases.
-
         Note: the first time this function is called, it will take noticeable
         time because it will load a large default global frequency table
         (unless one is provided to override the default).
+
+        Parameter 'global_freq' should be a dictionary where the keys are the
+        terms and the values are integers representing the number of times
+        the term appears in the code base.  A term that appears once will
+        have a value of 1, a term that appears twice will have a value of 2,
+        etc.  (Note that generating the global table is not a trivial
+        undertaking.  It requires mining a large number of source code
+        repositories to extract identifiers of classes, functions, variables,
+        etc., then splitting them to produce individual identifier fragments,
+        and finally curating the result manually.)
 
         This initialization function also accepts a number of optional
         arguments that control internal parameter values.  Their default
@@ -290,9 +244,15 @@ class Ronin(object):
 
          * 'length_cutoff': sets a lower limit for string lengths, such
            that the score for any string shorter or equal to 'length_cutoff'
-           will be set to 0 instead.
+           needs to be higher than 'min_short_string_freq' or else it's taken
+           to be 0 instead.
 
-         * 'low_frequency_cutoff': a cut-off value below which a given
+         * 'min_short_string_freq': minimum frequency of a short string that
+           will be accepted.  If a string in the frequency table is shorter
+           than 'length_cutoff' and its frequency value is higher than this,
+           then its value will be taken as 0 instead.
+
+         * 'low_freq_cutoff': a cut-off value below which a given
            frequency value in the frequency table is treated as being 0.
            This needs to have a value greater than 0 to have any effect.  For
            example, if the cutoff is set to 10, any frequency less than or
@@ -300,10 +260,15 @@ class Ronin(object):
            counteract noisiness in global frequency tables created from a
            large number of disparate sofware projects.
 
-         * 'rescale_exponent': the value of an exponent in the formula used
+         * 'normal_exponent': the value of an exponent in the formula used
            to adjust the frequency scores before they are used in the splitter
            algorithm.  See the internal function _rescale() to understand how
            this is used.
+
+         * 'dict_word_exponent': the value of an exponent in the formula used
+           to adjust the frequency scores before they are used in the splitter
+           algorithm, for the case when the token is a dictionary word.  See
+           the internal function _rescale() to understand how this is used.
 
          * 'permissive': when True, this makes Ronin use an alternate splitting
            condition in _same_case_split() that is more "relaxed" than when the
@@ -312,11 +277,8 @@ class Ronin(object):
            the author may not be natural to other people.  (The original
            algorithm for Samurai, on which Ronin is based, uses the equivalent
            of False.)
-
         '''
         if __debug__: log('init()')
-        if local_freq:
-            self._local_freq = local_freq
         if global_freq:
             self._global_freq = global_freq
         if not self._global_freq:
@@ -340,9 +302,11 @@ class Ronin(object):
             self._dictionary.update(nltk_wordnet.all_lemma_names())
             self._stemmer = SnowballStemmer('english')
 
-        self._low_freq_cutoff = low_frequency_cutoff
+        self._low_freq_cutoff = low_freq_cutoff
         self._length_cutoff = length_cutoff
-        self._rescale_exponent = rescale_exponent
+        self._min_short_freq = min_short_string_freq
+        self._normal_exponent = normal_exponent
+        self._dict_word_exponent = dict_word_exponent
         self._permissive = permissive
 
 
@@ -390,7 +354,7 @@ class Ronin(object):
                 alt = s[i+1:]
                 alt_score = score(alt)
                 if __debug__: log('"{}" alt score {}', alt, alt_score)
-                if camel_score > self._rescale(alt, alt_score):
+                if camel_score >= self._rescale(alt, alt_score):
                     if __debug__: log('{} > {} ==> better to include uppercase letter',
                                       camel_score, self._rescale(alt, alt_score))
                     if i > 0:
@@ -420,28 +384,28 @@ class Ronin(object):
         i         = 0
         split     = None
         max_score = -1
-        threshold = max(score(s), score_ns)
+        threshold = max(self._rescale(s, score(s)), score_ns)
         if __debug__: log('_same_case_split on {}, threshold {}', s, threshold)
         while i < n:
             left       = s[0:i]
             right      = s[i:n]
-            score_l    = score(left)
-            score_r    = score(right)
-            prefix     = self._is_prefix(left) or self._is_suffix(right)
-            to_split_l = self._rescale(left, score_l) > threshold
-            to_split_r = self._rescale(right, score_r) > threshold
+            score_l    = self._rescale(left, score(left))
+            score_r    = self._rescale(right, score(right))
+            prefix     = self._is_prefix(left)
+            to_split_l = score_l > threshold
+            to_split_r = score_r > threshold
 
-            if __debug__: log('|{} : {}| score l = {:6d} r = {:6d}'
-                              ' rescaled l = {:.05f} r = {:.05f}'
-                              ' split_l = {:1b} r = {:1b} prefix = {:1b}'
-                              ' th = {} max_score = {}',
+            if __debug__: log('|{} : {}| score l = {:6f} r = {:6f}'
+                              ' split l:r = {:1b}:{:1b}'
+                              ' prefix = {:1b} th = {} max_score = {}',
                               left, right, score_l, score_r,
-                              self._rescale(left, score_l),
-                              self._rescale(right, score_r),
                               to_split_l, to_split_r, prefix, threshold, max_score)
 
+            try_alternate = (not prefix and to_split_l)
             if not prefix and ((self._permissive and (to_split_l or to_split_r))
                                or (to_split_l and to_split_r)):
+                if not self._permissive:
+                    try_alternate = False
                 if __debug__: log('--> case 1')
                 if (score_l + score_r) > max_score:
                     if __debug__: log('({} + {}) > {}', score_l, score_r, max_score)
@@ -450,7 +414,9 @@ class Ronin(object):
                     if __debug__: log('case 1 split result: {}', split)
                 else:
                     if __debug__: log('no split for case 1')
-            elif not prefix and to_split_l:
+                    if self._permissive:
+                        try_alternate = True
+            if try_alternate:
                 if __debug__: log('--> case 2 -- recursive call on "{}"', s[i:n])
                 tmp = self._same_case_split(right, score, score_ns)
                 if tmp[0] != right:
@@ -468,38 +434,29 @@ class Ronin(object):
         '''Returns a closure that computes a score using the frequency tables
         with which the splitter has been initialized.
         '''
-        if self._local_freq:
-            log_all_freq = math.log10(sum(self._local_freq.values()))
-            def scoring_function(w):
-                local_f  = self._local_freq[w] if w in self._local_freq else 0
-                global_f = self._global_freq[w] if w in self._global_freq else 0
-                if w not in self._global_freq:
-                    return local_f
-                if w not in self._local_freq:
-                    return global_f/log_all_freq
-                else:
-                    return local_f + global_f/log_all_freq
-        else:
-            def scoring_function(w):
+        def scoring_function(w):
+            if w in self._global_freq:
+                return self._global_freq[w]
+            else:
+                w = w.lower()
                 if w in self._global_freq:
                     return self._global_freq[w]
                 else:
-                    w = w.lower()
-                    if w in self._global_freq:
-                        return self._global_freq[w]
-                    else:
-                        return 0
+                    return 0
 
         return scoring_function
 
 
     def _rescale(self, token, score_value):
         if len(token) <= self._length_cutoff:
-            return 0
+            if score_value <= self._min_short_freq:
+                return 0
         if score_value <= self._low_freq_cutoff:
             return 0
+        elif self._in_dictionary(token):
+            return math.pow(score_value, self._dict_word_exponent)
         else:
-            return math.pow(score_value, self._rescale_exponent)
+            return math.pow(score_value, self._normal_exponent)
 
 
     def _in_dictionary(self, word):
