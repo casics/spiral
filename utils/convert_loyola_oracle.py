@@ -1,14 +1,20 @@
-#!/usr/bin/env python3.4
-#
+#!/usr/bin/env python3
+# =============================================================================
 # @file    convert_loyola_oracle.py
 # @brief   Take the Loyola U. Delaware identifier "oracle" set and convert it.
 # @author  Michael Hucka
+# @license Please see the file named LICENSE in the project directory
+# @website https://github.com/casics/extractor
 #
-# <!---------------------------------------------------------------------------
-# Copyright (C) 2015 by the California Institute of Technology.
-# This software is part of CASICS, the Comprehensive and Automated Software
-# Inventory Creation System.  For more information, visit http://casics.org.
-# ------------------------------------------------------------------------- -->
+# This was used to create the file "ludiso.tsv" in ../tests/data.  It is
+# meant to be run on the text file from the "Loyola University of Delaware
+# Identifier Splitting Oracle", available from the website at
+# http://www.cs.loyola.edu/~binkley/ludiso/. (An archived copy of the web page
+# and original data file is available in ../tests/data/archived/ludiso/.)
+#
+# Example invocation:
+# ./convert_loyola_oracle.py -i ludiso.txt -o ludiso.tsv
+# =============================================================================
 
 import csv
 import math
@@ -17,21 +23,23 @@ import plac
 import re
 import sys
 
-sys.path.append('../common')
-
-from utils import *
-from logger import *
+try:
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+except:
+    sys.path.append("..")
 
 
 # Main
 # .............................................................................
 
-def convert_file(inputfile=None, outputfile=None, debug=False, loglevel='info'):
-    log = Logger(os.path.splitext(sys.argv[0])[0], console=True).get_log()
-    if debug:
-        log.set_level('debug')
-    else:
-        log.set_level(loglevel)
+@plac.annotations(
+    debug      = ('drop into ipdb opening files',         'flag',   'd'),
+    inputfile  = ('input text file',                      'option', 'i'),
+    outputfile = ('output file',                          'option', 'o'),
+    pickle     = ('output as pickle file (default: csv)', 'flag',   'p'),
+)
+
+def convert_file(inputfile=None, outputfile=None, debug=False, pickle=False):
     expected = {}
     try:
         if debug:
@@ -42,19 +50,20 @@ def convert_file(inputfile=None, outputfile=None, debug=False, loglevel='info'):
                 (_, token, _, _, _, _, result, *_) = line.split()
                 expected[token] = [x for x in result.split('-') if not x.isdigit()]
                 total += 1
-        with open(outputfile, 'wb') as pickle_file:
-            pickle.dump(expected, pickle_file)
-            log.info('{} tokens written to {}'.format(total, outputfile))
+        if pickle:
+            with open(outputfile, 'wb') as pickle_file:
+                pickle.dump(expected, pickle_file)
+                print('{} tokens written to {}'.format(total, outputfile))
+        else:
+            with open(outputfile, 'w') as file:
+                for k, v in expected.items():
+                    file.write(k)
+                    file.write('	')
+                    file.write(','.join(v))
+                    file.write('\n')
     except Exception as err:
-        log.error(err)
+        print(err)
 
-
-convert_file.__annotations__ = dict(
-    debug      = ('drop into ipdb opening files', 'flag',   'd'),
-    inputfile  = ('input text file',              'option', 'i'),
-    outputfile = ('output CSV file',              'option', 'o'),
-    loglevel   = ('logging level: "debug" or "info"', 'option', 'L'),
-)
 
 if __name__ == '__main__':
     plac.call(convert_file)
