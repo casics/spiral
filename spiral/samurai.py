@@ -78,15 +78,18 @@ Tracing the algorithm
 ---------------------
 
 To print what the splitter is doing while processing a given string, you can
-turn on logging by setting the logging level to "logging.DEBUG".  Search for
-logging.basicConfig(...) in the code below and change the line
+turn on logging by setting the logging level to "logging.DEBUG" before
+importing the samurai module.  Here is an example:
 
-    logging.basicConfig(level=logging.INFO,  format='samurai: %(message)s')
-to
-    logging.basicConfig(level=logging.DEBUG, format='samurai: %(message)s')
+  import logging
+  logging.basicConfig(level=logging.DEBUG, format='')
+  from spiral import samurai
 
 Logging will be printed to the standard output stream.  Note: this will only
-work if you did not use the -O option to the Python interpreter.
+work if you do NOT use the -O option to the Python interpreter.
+
+Optimization
+------------
 
 This module wraps all logging code with the Python __debug__ compile-time
 symbol, so that you can use the -O flag to Python to make it omit the code
@@ -116,9 +119,9 @@ import sys
 # and everything inside "if __debug__" blocks will be entirely compiled out.
 if __debug__:
     import logging
-    logging.basicConfig(level=logging.INFO, format='samurai: %(message)s')
-    logger = logging.getLogger('')
-    def log(s, *other_args): logger.debug(s.format(*other_args))
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger('samurai')
+    def log(s, *other_args): logger.debug('samurai: ' + s.format(*other_args))
 
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
