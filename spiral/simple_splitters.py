@@ -51,7 +51,7 @@ def digit_split(identifier):
 # .............................................................................
 
 _two_capitals = re.compile(r'[A-Z][A-Z]')
-_camel_case   = re.compile(r'((?<=[a-z])[A-Z])')
+_camel_case   = re.compile(r'((?<=[a-z0-9])[A-Z])')
 
 def safe_camelcase_split(identifier):
     '''Split identifiers by forward camel case only, i.e., lower-to-upper case
@@ -76,7 +76,10 @@ def safe_simple_split(identifier):
     split SQLlite or similar identifiers.  Does not split identifies that
     have multiple adjacent uppercase letters anywhere in them, because doing
     so is risky if the uppercase letters are not an acronym.  Example:
-    aFastNDecoder -> ['aFastNDecoder'].  Digits are not removed from strings.
+    aFastNDecoder -> ['aFastNDecoder'].  Digits are not removed from strings
+    nor treated as delimiters, although a capital letter after a digit is
+    considered equivalent to a camel case transition; for example,
+    'foo_bar2Biff' will be split as ['foo', 'bar2', 'Biff'].
     '''
     parts = str.translate(identifier, _hard_splitter).split()
     return list(flatten(safe_camelcase_split(token) for token in parts))
@@ -84,9 +87,6 @@ def safe_simple_split(identifier):
 
 # Not-so-safe simple splitter.
 # .............................................................................
-
-_simple_split_chars = '$~_.:/0123456789'
-_simple_splitter = str.maketrans(_simple_split_chars, ' '*len(_simple_split_chars))
 
 def simple_split(identifier):
     '''Split identifiers by hard delimiters such as underscores, digits, and
@@ -97,10 +97,11 @@ def simple_split(identifier):
     sequences of all upper-case letters if there is a lower-to-upper case
     transition somewhere.  Example: simple_split('aFastNDecoder') will
     produce ['a', 'Fast', 'NDecoder'] even though "NDecoder" may be more
-    correctly split as 'N' 'Decoder'. Digits are removed from the string.
+    correctly split as 'N' 'Decoder'.
     '''
-    parts = str.translate(identifier, _simple_splitter)
-    return re.sub(_camel_case, r' \1', parts).split()
+    transformed = str.translate(identifier, _hard_splitter)
+    parts = re.split(r'(\d+)', transformed)
+    return list(flatten(re.sub(_camel_case, r' \1', token).split() for token in parts))
 
 
 # Not-so-safe, not-so-simple splitter.
