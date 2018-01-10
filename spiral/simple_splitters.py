@@ -51,7 +51,7 @@ def digit_split(identifier):
 # .............................................................................
 
 _two_capitals = re.compile(r'[A-Z][A-Z]')
-_camel_case   = re.compile(r'((?<=[a-z0-9])[A-Z])')
+_camel_case   = re.compile(r'((?<=[a-z])[A-Z])')
 
 def safe_camelcase_split(identifier):
     '''Split identifiers by forward camel case only, i.e., lower-to-upper case
@@ -89,6 +89,24 @@ def safe_simple_split(identifier):
 # .............................................................................
 
 def simple_split(identifier):
+    '''Split identifiers by hard delimiters such as underscores, and forward
+    camel case only, i.e., lower-to-upper case transitions.  This means it
+    will split fooBarBaz into 'foo', 'Bar' and 'Baz', and foo2bar into 'foo'
+    and 'bar, but it won't change SQLlite or similar identifiers.  Unlike
+    safe_simple_split(), this will split identifiers that may have sequences
+    of all upper-case letters if there is a lower-to-upper case transition
+    somewhere.  Example: simple_split('aFastNDecoder') will produce ['a',
+    'Fast', 'NDecoder'] even though "NDecoder" may be more correctly split as
+    'N' 'Decoder'.  It preserves digits and does not treat them specially.
+    '''
+    parts = str.translate(identifier, _hard_splitter).split()
+    return list(flatten(re.sub(_camel_case, r' \1', token).split() for token in parts))
+
+
+# Not-so-safe simple splitter.
+# .............................................................................
+
+def elementary_split(identifier):
     '''Split identifiers by hard delimiters such as underscores, digits, and
     forward camel case only, i.e., lower-to-upper case transitions.  This
     means it will split fooBarBaz into 'foo', 'Bar' and 'Baz', and foo2bar
@@ -97,7 +115,9 @@ def simple_split(identifier):
     sequences of all upper-case letters if there is a lower-to-upper case
     transition somewhere.  Example: simple_split('aFastNDecoder') will
     produce ['a', 'Fast', 'NDecoder'] even though "NDecoder" may be more
-    correctly split as 'N' 'Decoder'.
+    correctly split as 'N' 'Decoder'.  Digits are treated as delimiters, but
+    not otherwise recognized or removed.  For example, 'utf8_var' will be
+    split into ['utf', '8', 'var'].  (Contrast this to heuristic_split().)
     '''
     transformed = str.translate(identifier, _hard_splitter)
     parts = re.split(r'(\d+)', transformed)
