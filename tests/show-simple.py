@@ -32,7 +32,7 @@ cases = [
     'Foobar',
     'fooBAR',
     'fooBARbif',
-    'fooBARbifBaz',
+    'fooBARzBif',
     'ABCfoo',
     'ABCFoo',
     'ABCFooBar',
@@ -41,12 +41,14 @@ cases = [
     'fooBar2Day',
     'fooBAR2day',
     'fooBAR2Day',
-    'Foo2Bar',
-    '2foo2bar',
-    '2Foo2bar',
-    '2Foo2Bar',
-    '2foo2bar2',
-    'The2ndVar',
+    'foo3000',
+    '99foo3000',
+    'foo2Bar',
+    'foo2bar2',
+    'Foo2Bar2',
+    '2ndvar',
+    'the2ndvar',
+    'the2ndVar',
     'row10',
     'utf8',
     'aUTF8var',
@@ -55,14 +57,14 @@ cases = [
 ]
 
 def use(splitter, s):
-    return ' '.join(splitter(s)).ljust(16)
+    return ' '.join(splitter(s)).ljust(15)
 
-print('input'.ljust(16) + 'pure_camel'.ljust(16) + 'safe_simple'.ljust(16)
-      + 'simple'.ljust(16) + 'elementary'.ljust(16) + 'heuristic'.ljust(16))
-print('-------'.ljust(16) + '-------'.ljust(16) + '-------'.ljust(16)
-      + '-------'.ljust(16) + '-------'.ljust(16) + '-------'.ljust(16))
+print('input'.ljust(15) + 'pure_camel'.ljust(15) + 'safe_simple'.ljust(15)
+      + 'simple'.ljust(15) + 'elementary'.ljust(15) + 'heuristic'.ljust(15))
+print('-------'.ljust(15) + '-------'.ljust(15) + '-------'.ljust(15)
+      + '-------'.ljust(15) + '-------'.ljust(15) + '-------'.ljust(15))
 for s in cases:
-    print(s.ljust(16)
+    print(s.ljust(15)
           + use(pure_camelcase_split, s)
           + use(safe_simple_split, s)
           + use(simple_split, s)
