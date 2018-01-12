@@ -47,17 +47,19 @@ def digit_split(identifier):
     return parts
 
 
-# Safe camel case splitter.
+# Pure camel case splitter.
 # .............................................................................
 
 _two_capitals = re.compile(r'[A-Z][A-Z]')
 _camel_case   = re.compile(r'((?<=[a-z])[A-Z])')
 
-def safe_camelcase_split(identifier):
-    '''Split identifiers by forward camel case only, i.e., lower-to-upper case
-    transitions.  This means it will split fooBarBaz into 'foo', 'Bar' and
-    'Baz', but it won't change SQLlite or similar identifiers.  Does not
-    split identifies that have multiple adjacent uppercase letters.'''
+def pure_camelcase_split(identifier):
+    '''Split identifiers by forward camel case only, i.e., lower-to-upper
+    case transitions.  This means it will split fooBarBaz into 'foo', 'Bar'
+    and 'Baz', but it won't change SQLlite or similar identifiers. It also
+    ignores delimiter characters.  It will not split identifies that have
+    multiple adjacent uppercase letters.
+    '''
     if re.search(_two_capitals, identifier):
         return [identifier]
     return re.sub(_camel_case, r' \1', identifier).split()
@@ -82,7 +84,7 @@ def safe_simple_split(identifier):
     'foo_bar2Biff' will be split as ['foo', 'bar2', 'Biff'].
     '''
     parts = str.translate(identifier, _hard_splitter).split()
-    return list(flatten(safe_camelcase_split(token) for token in parts))
+    return list(flatten(pure_camelcase_split(token) for token in parts))
 
 
 # Not-so-safe simple splitter.
