@@ -47,6 +47,11 @@ cases = [
     '2Foo2Bar',
     '2foo2bar2',
     'The2ndVar',
+    'row10',
+    'utf8',
+    'aUTF8var',
+    'J2SE4me',
+    'IPv4addr',
 ]
 
 def use(splitter, s):
