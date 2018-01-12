@@ -39,6 +39,7 @@ Foo2Bar        Foo2Bar        Foo2Bar        Foo2Bar         Foo 2 Bar       Foo
 2Foo2Bar       2Foo2Bar       2Foo2Bar       2Foo2Bar        2 Foo 2 Bar     Foo2Bar
 2foo2bar2      2foo2bar2      2foo2bar2      2foo2bar2       2 foo 2 bar 2   foo2bar
 The2ndVar      The2nd Var     The2nd Var     The2nd Var      The 2 nd Var    The2nd Var
+the2ndvar      the2ndvar      the2ndvar      the2ndvar       the 2 ndvar     the 2nd var
 row10          row10          row10          row10           row 10          row
 utf8           utf8           utf8           utf8            utf 8           utf8
 aUTF8var       aUTF8var       aUTF8var       a UTF8var       a UTF 8 var     a UTF8 var
@@ -170,7 +171,7 @@ def elementary_split(identifier):
 
 _common_terms = re.compile(r'(' + '|'.join(common_terms_with_numbers) + ')', re.IGNORECASE)
 
-def heuristic_split(identifier):
+def heuristic_split(identifier, exceptions=_common_terms):
     '''Split identifiers by hard delimiters such as underscores, digits, and
     forward camel case only, i.e., lower-to-upper case transitions.  This
     means it will split fooBarBaz into 'foo', 'Bar' and 'Baz', and foo2bar
@@ -182,11 +183,13 @@ def heuristic_split(identifier):
     correctly split as 'N' 'Decoder'.  Leading digits are removed from the
     identifier string before processing; embedded digits are removed if they
     appear at the tail ends of tokens, but not if they appear in the middle
-    of tokens or are recognized as being part of common abbreviations such as
-    'utf8'.  Tokens that consist ONLY of digits are removed.
+    of tokens or are recognized as being exceptions defined by the set in
+    parameter 'exceptions'.  (The default set of exceptions are common terms
+    with embedded numbers such as 'utf8'.)  Tokens that consist ONLY of
+    digits are removed.
     '''
     parts = str.translate(identifier.lstrip(string.digits), _hard_splitter)
-    parts = re.sub(_common_terms, r' \1 ', parts)
+    parts = re.sub(exceptions, r' \1 ', parts)
     return _filter_digit_strings(re.sub(_camel_case, r' \1', parts).split())
 
 
