@@ -14,9 +14,11 @@ symbols such as "int32", "float64", etc.
 # - personal experience
 
 common_terms_with_numbers = {
-    '1d',
-    '2d',
-    '3d',
+    '1st',
+    '2nd',
+    '3rd',
+    '4th',
+    '5th',
     'a20',
     'a56',
     'ac2',
