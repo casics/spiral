@@ -52,7 +52,7 @@ def save_frequencies_to_pickle(data, filename):
                 pickle.dump(data, pickle_file)
         else:
             with open(filename, 'wb') as pickle_file:
-                pickle.dump(frequencies, pickle_file)
+                pickle.dump(data, pickle_file)
     except IOError as err:
         raise SystemExit('encountered error trying to dump pickle {}'.format(filename))
     except pickle.PickleError as err:
