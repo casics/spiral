@@ -13,7 +13,7 @@ from .frequencies import frequencies_from_csv_file, frequencies_from_pickle
 from .frequencies import save_frequencies_to_pickle
 
 # Simple splitters.
-from .simple_splitters import delimiter_split, digit_split, safe_camelcase_split
+from .simple_splitters import delimiter_split, digit_split, pure_camelcase_split
 from .simple_splitters import safe_simple_split, simple_split
 
 # Advanced splitters.
