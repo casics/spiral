@@ -48,7 +48,7 @@ def convert_file(inputfile=None, outputfile=None, debug=False, pickle=False):
             total = 0
             for line in input:
                 (_, token, _, _, _, _, result, *_) = line.split()
-                expected[token] = [x for x in result.split('-') if not x.isdigit()]
+                expected[token] = [x for x in result.split('-')]
                 total += 1
         if pickle:
             with open(outputfile, 'wb') as pickle_file:
