@@ -59,17 +59,17 @@ cases = [
     'IPv4addr',
 ]
 
-def use(splitter, s):
-    return ' '.join(splitter(s)).ljust(15)
+def use(splitter, s, width=15):
+    return ' '.join(splitter(s)).ljust(width)
 
-print('input'.ljust(15) + 'pure_camel'.ljust(15) + 'safe_simple'.ljust(15)
-      + 'simple'.ljust(15) + 'elementary'.ljust(15) + 'heuristic'.ljust(15))
-print('-------'.ljust(15) + '-------'.ljust(15) + '-------'.ljust(15)
-      + '-------'.ljust(15) + '-------'.ljust(15) + '-------'.ljust(15))
+print('input'.ljust(14) + 'pure_camel'.ljust(14) + 'safe_simple'.ljust(14)
+      + 'simple'.ljust(14) + 'elementary'.ljust(15) + 'heuristic'.ljust(15))
+print('-------'.ljust(14) + '-------'.ljust(14) + '-------'.ljust(14)
+      + '-------'.ljust(14) + '-------'.ljust(15) + '-------'.ljust(15))
 for s in cases:
-    print(s.ljust(15)
-          + use(pure_camelcase_split, s)
-          + use(safe_simple_split, s)
-          + use(simple_split, s)
+    print(s.ljust(14)
+          + use(pure_camelcase_split, s, 14)
+          + use(safe_simple_split, s, 14)
+          + use(simple_split, s, 14)
           + use(elementary_split, s)
           + use(heuristic_split, s))
