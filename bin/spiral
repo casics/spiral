@@ -17,7 +17,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 import spiral
 from spiral import ronin
 from spiral import samurai
-from spiral.simple_splitters import safe_camelcase_split, safe_simple_split
+from spiral.simple_splitters import pure_camelcase_split, safe_simple_split
 from spiral.simple_splitters import simple_split
 
 
@@ -26,7 +26,7 @@ from spiral.simple_splitters import simple_split
 
 _available_splitters = {'ronin': (ronin.init, ronin.split),
                         'samurai': (samurai.init, samurai.split),
-                        'safe_camelcase_split': (None, safe_camelcase_split),
+                        'pure_camelcase_split': (None, pure_camelcase_split),
                         'safe_simple_split': (None, safe_simple_split),
                         'simple_split': (None, simple_split)}
 
@@ -85,6 +85,7 @@ and exit without doing anything more.
         raise SystemExit('Unrecognized splitter: "{}"'.format(splitter))
     if not file and not strings:
         raise SystemExit('Need a file or string as input argument')
+
     if file:
         if os.path.exists(file):
             with open(file) as f:
