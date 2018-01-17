@@ -14,7 +14,8 @@ from .frequencies import save_frequencies_to_pickle
 
 # Simple splitters.
 from .simple_splitters import delimiter_split, digit_split, pure_camelcase_split
-from .simple_splitters import safe_simple_split, simple_split
+from .simple_splitters import safe_simple_split, simple_split, elementary_split
+from .simple_splitters import heuristic_split
 
 # Advanced splitters.
 from . import samurai
