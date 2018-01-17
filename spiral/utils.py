@@ -6,6 +6,8 @@
 # @website https://github.com/casics/spiral
 # =============================================================================
 
+import collections
+
 def msg(string, *other_args):
     '''Like the standard print(), but treats the first argument as a string
     with format specifiers, and also flushes the output immediately. Flushing
@@ -16,23 +18,11 @@ def msg(string, *other_args):
     print(string.format(*other_args), flush=True)
 
 
-# Based on http://stackoverflow.com/a/10824484/743730
-def flatten(iterable):
-    '''Flatten a list produced by an iterable.  Non-recursive.'''
-    iterator, sentinel, stack = iter(iterable), object(), []
-    while True:
-        value = next(iterator, sentinel)
-        if value is sentinel:
-            if not stack:
-                break
-            iterator = stack.pop()
-        elif isinstance(value, str):
-            yield value
+def flatten(lst):
+    '''Recursively flatten a list of lists.  From the answer by user Christian
+    here: https://stackoverflow.com/a/2158532/743730'''
+    for el in lst:
+        if isinstance(el, collections.Iterable) and not isinstance(el, (str, bytes)):
+            yield from flatten(el)
         else:
-            try:
-                new_iterator = iter(value)
-            except TypeError:
-                yield value
-            else:
-                stack.append(iterator)
-                iterator = new_iterator
+            yield el
