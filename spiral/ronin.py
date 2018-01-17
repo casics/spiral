@@ -89,7 +89,7 @@ Tracing the algorithm
 
 To print what the splitter is doing while processing a given string, you can
 turn on logging by setting the logging level to "logging.DEBUG" before
-importing the ronin module.  Here is an example:
+importing the Ronin module.  Here is an example:
 
   import logging
   logging.basicConfig(level=logging.DEBUG, format='')
@@ -112,7 +112,7 @@ The name "Ronin" is a play on the use of the name "Samurai" by Enslen et al.
 (2009) for their identifier splitting algorithm.  The bulk of Ronin is
 identical to Samurai, but it would be inappropriate to call this
 implementation Samurai too.  In an effort to imply the lineage of this
-modified algorithm, I chose "ronin" (a name referring to a drifter samurai
+modified algorithm, I chose "Ronin" (a name referring to a drifter samurai
 without a master, during the Japanese feudal period).
 
 Authors
@@ -134,15 +134,15 @@ import os
 import re
 import sys
 
-# NOTE: to turn on debugging, make sure python -O was *not* used when this
-# file was byte-compiled, and then change logging.INFO to logging.DEBUG below.
+# NOTE: to turn on debugging, make sure python -O was *not* used to start
+# python, then set the logging level to DEBUG *before* loading this module.
 # Conversely, to optimize out all the debugging code, use python -O or -OO
 # and everything inside "if __debug__" blocks will be entirely compiled out.
 if __debug__:
     import logging
-    logging.basicConfig(level=logging.DEBUG)
-    logger = logging.getLogger('ronin')
-    def log(s, *other_args): logger.debug('ronin: ' + s.format(*other_args))
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger('Ronin')
+    def log(s, *other_args): logger.debug('Ronin: ' + s.format(*other_args))
 
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -151,10 +151,12 @@ except:
 
 try:
     from .frequencies import *
-    from .simple_splitters import simple_split
+    from .simple_splitters import heuristic_split, elementary_split
+    from .constants import *
 except:
     from frequencies import *
-    from simple_splitters import simple_split
+    from simple_splitters import heuristic_split, elementary_split
+    from constants import *
 
 
 # Global constants.
@@ -167,9 +169,9 @@ try:
     _DEFAULT_FREQ_DIR = os.path.dirname(__file__)
 except:
     _DEFAULT_FREQ_DIR = os.path.dirname('.')
-_DEFAULT_FREQ_PICKLE = os.path.join(_DEFAULT_FREQ_DIR, 'frequencies.pklz')
+_DEFAULT_FREQ_PICKLE = os.path.join(_DEFAULT_FREQ_DIR, 'data/frequencies.pklz')
 '''Pickle file storing the default global frequency table shipped with this
-module.  This constant is only read by Ronin.init(...).'''
+module.  This constant is only read by ronin.init(...).'''
 
 # The list of prefixes from the web page for Samurai,
 # https://hiper.cis.udel.edu/Samurai/Samurai.html
@@ -186,44 +188,60 @@ module.  This constant is only read by Ronin.init(...).'''
 # due to Ronin's use of a dictionary check, which Samurai doesn't use, or due
 # to other changes.  Ronin doesn't use the suffix test for that reason.
 
-_PREFIX_LIST = ['afro', 'ambi', 'amphi', 'ana', 'anglo', 'apo', 'astro', 'bi',
-                'bio', 'circum', 'cis', 'co', 'col', 'com', 'con', 'contra',
-                'cor', 'cryo', 'crypto', 'de', 'de', 'demi', 'di', 'dif',
-                'dis', 'du', 'duo', 'eco', 'electro', 'em', 'en', 'epi',
-                'euro', 'ex', 'franco', 'geo', 'hemi', 'hetero', 'homo',
-                'hydro', 'hypo', 'ideo', 'idio', 'il', 'im', 'infra', 'inter',
-                'intra', 'ir', 'iso', 'macr', 'mal', 'maxi', 'mega', 'megalo',
-                'micro', 'midi', 'mini', 'mis', 'mon', 'multi', 'neo', 'omni',
-                'paleo', 'para', 'ped', 'peri', 'poly', 'pre', 'preter',
-                'proto', 'pyro', 're', 'retro', 'semi', 'socio', 'supra',
-                'sur', 'sy', 'syl', 'sym', 'syn', 'tele', 'trans', 'tri',
-                'twi', 'ultra', 'un', 'uni']
+_PREFIXES = {'afro', 'ambi', 'amphi', 'ana', 'anglo', 'apo', 'astro', 'bi',
+             'bio', 'circum', 'cis', 'co', 'col', 'com', 'con', 'contra',
+             'cor', 'cryo', 'crypto', 'de', 'de', 'demi', 'di', 'dif',
+             'dis', 'du', 'duo', 'eco', 'electro', 'em', 'en', 'epi',
+             'euro', 'ex', 'franco', 'geo', 'hemi', 'hetero', 'homo',
+             'hydro', 'hypo', 'ideo', 'idio', 'il', 'im', 'infra', 'inter',
+             'intra', 'ir', 'iso', 'macr', 'mal', 'maxi', 'mega', 'megalo',
+             'micro', 'midi', 'mini', 'mis', 'mon', 'multi', 'neo', 'omni',
+             'paleo', 'para', 'ped', 'peri', 'poly', 'pre', 'preter',
+             'proto', 'pyro', 're', 'retro', 'semi', 'socio', 'supra',
+             'sur', 'sy', 'syl', 'sym', 'syn', 'tele', 'trans', 'tri',
+             'twi', 'ultra', 'un', 'uni'}
 
 
 # Main class
 # .............................................................................
 
 class Ronin(object):
-    _dictionary       = None
-    _stemmer          = None
+    _dictionary           = None
+    _stemmer              = None
+    _frequencies          = None
+    _highest_freq         = None
+    _length_cutoff        = None
+    _min_short_freq       = None
+    _low_freq_cutoff      = None
+    _normal_exponent      = None
+    _dict_word_exponent   = None
+    _camel_bias           = None
+    _split_bias           = 0.00002
+    _split_bias_threshold = 0
 
-    _global_freq        = None
-    _length_cutoff      = None
-    _min_short_freq     = None
-    _low_freq_cutoff    = None
-    _normal_exponent    = None
-    _dict_word_exponent = None
-    _permissive         = True
-
-    def init(self, global_freq=None, low_freq_cutoff=1850,
-             length_cutoff=2, min_short_string_freq=500000,
-             normal_exponent=0.25, dict_word_exponent=0.5, permissive=True):
+    # The following parameter values came from optimizing against both the
+    # Ludiso and INTT data sets simultaneously, then doing some hand tweaking
+    # to see the particular errors that arose and finally settling on values
+    # that produced slightly natural-looking splits.  The final scores were:
+    #   Ludiso: 2190/2663   (82.24% accuracy)
+    #   INTT:   17094/18772 (91.06% accuracy)
+    # The optimization algorithm that produced these values was GDE3 in
+    # Platypus.  (Aside: GDE3 seemed to converge so slowly compared to NSGAII
+    # and IBEA that I had given up on it.  One night I ended up letting them
+    # all run anyway, and lo and behold, GDE3 found a parameter combination
+    # that was actually in a different range than the others, and this is the
+    # one I ended up keeping.  Moral: optimization is like a box of
+    # chocolates -- you never know what you're gonna get.)
+    #
+    def init(self, frequencies=None, low_freq_cutoff=279, length_cutoff=2,
+             min_short_string_freq=273000, normal_exponent=0.3138,
+             dict_word_exponent=0.25, camel_bias=0.7, split_bias=0.0000283):
         '''Initialize internal frequency files for the Ronin split() function.
         Note: the first time this function is called, it will take noticeable
-        time because it will load a large default global frequency table
-        (unless one is provided to override the default).
+        time because it will load a global frequency table (unless one is
+        provided to override the default) and some NLTK dictionaries.
 
-        Parameter 'global_freq' should be a dictionary where the keys are the
+        Parameter 'frequencies' should be a dictionary where the keys are the
         terms and the values are integers representing the number of times
         the term appears in the code base.  A term that appears once will
         have a value of 1, a term that appears twice will have a value of 2,
@@ -231,19 +249,21 @@ class Ronin(object):
         undertaking.  It requires mining a large number of source code
         repositories to extract identifiers of classes, functions, variables,
         etc., then splitting them to produce individual identifier fragments,
-        and finally curating the result manually.)
+        and finally curating the result manually.)  If not provided, Ronin will
+        use a default table.
 
-        This initialization function also accepts a number of optional
-        arguments that control internal parameter values.  Their default
-        values were determined by numerical optimization in conjunction with
-        the default global frequency table shipped with Ronin.  In case you
-        want to try searching for other values for a particular application,
-        init() offers the following adjustable parameters, but beware that the
-        values for optimal performance depend very much on the specific global
-        frequency table you use:
+        This init function also accepts a number of optional arguments that
+        control internal parameter values.  The default values were
+        determined by numerical optimization in conjunction with the default
+        global frequency table shipped with Ronin.  In case you want to try
+        searching for other values for a particular application, init()
+        offers the following adjustable parameters, but beware that the
+        values for optimal performance depend very much on the specific
+        global frequency table you use and finding good values requires
+        optimizing all the parameters simultaneously.
 
-         * 'length_cutoff': sets a lower limit for string lengths, such
-           that the score for any string shorter or equal to 'length_cutoff'
+         * 'length_cutoff': sets a lower limit for string lengths, such that
+           the frequency for any string shorter or equal to 'length_cutoff'
            needs to be higher than 'min_short_string_freq' or else it's taken
            to be 0 instead.
 
@@ -252,44 +272,64 @@ class Ronin(object):
            than 'length_cutoff' and its frequency value is lower than this,
            then its value will be taken as 0 instead.
 
-         * 'low_freq_cutoff': a cut-off value below which a given
-           frequency value in the frequency table is treated as being 0.
-           This needs to have a value greater than 0 to have any effect.  For
-           example, if the cutoff is set to 10, any frequency less than or
-           equal to 10 will be given a score of 0.  This threshold tends to
-           counteract noisiness in global frequency tables created from a
-           large number of disparate sofware projects.
+         * 'low_freq_cutoff': a cut-off value below which a given frequency
+           value in the frequency table is treated as being 0.  This needs to
+           have a value greater than 0 to have any effect.  For example, if
+           the cutoff is set to 10, any frequency less than or equal to 10
+           will be given a score of 0.  This threshold tends to counteract
+           noisiness in global frequency tables created from a large number
+           of disparate sofware projects.  (Note: the default frequency table
+           provided with Ronin does not have entries with values less than 10
+           in order to keep the file size small, but a full table is also
+           provided with Spiral.  See the 'spiral/data' subdirectory of the
+           package.)
 
          * 'normal_exponent': the value of an exponent in the formula used
            to adjust the frequency scores before they are used in the splitter
-           algorithm.  See the internal function _rescale() to understand how
-           this is used.
+           algorithm.
 
          * 'dict_word_exponent': the value of an exponent in the formula used
            to adjust the frequency scores before they are used in the splitter
-           algorithm, for the case when the token is a dictionary word.  See
-           the internal function _rescale() to understand how this is used.
+           algorithm, for the case when the token is a dictionary word.
 
-         * 'permissive': when True, this makes Ronin use an alternate splitting
-           condition in _same_case_split() that is more "relaxed" than when the
-           value is False.  In the author's experience, True produces slightly
-           more natural splits, but to be fair, what constitutes "natural" to
-           the author may not be natural to other people.  (The original
-           algorithm for Samurai, on which Ronin is based, uses the equivalent
-           of False.)
+         * 'camel_bias': multiplier used in a score comparison while deciding
+           where to split string segments with an upper-to-lower case
+           transition.
+
+         * 'split_bias': when non-zero, this makes Ronin use an alternate
+           splitting condition that is more "relaxed" when splitting
+           identfiers without camel-case transitions.  This helps in some
+           situations, but it also tends to cause more spurious splits.  A
+           value of zero turns this off.  A non-zero value needs to be
+           extremely small to have any effect.  (The original algorithm for
+           Samurai, on which Ronin is based, uses the equivalent of zero.)
+
+        An optimization utility is included in the Spiral source code
+        distribution, to help find parameter values for the above.
         '''
         if __debug__: log('init()')
-        if global_freq:
-            self._global_freq = global_freq
-        if not self._global_freq:
+        if frequencies:
+            self._frequencies = frequencies
+        if not self._frequencies:
             if __debug__: log('loading frequency pickle {}'
                               .format(_DEFAULT_FREQ_PICKLE))
             if os.path.exists(_DEFAULT_FREQ_PICKLE):
-                self._global_freq = frequencies_from_pickle(_DEFAULT_FREQ_PICKLE)
+                self._frequencies = frequencies_from_pickle(_DEFAULT_FREQ_PICKLE)
             else:
                 raise ValueError('Cannot read default frequencies pickle file "{}"'
                                  .format(_DEFAULT_FREQ_PICKLE))
-
+        if __debug__: log('frequency table has {} entries', len(self._frequencies))
+        self._highest_freq = max(self._frequencies.values())
+        if __debug__: log('highest frequency = {}', self._highest_freq)
+        self._split_bias = split_bias
+        self._split_bias_threshold = self._split_bias * self._highest_freq
+        if __debug__: log('split bias threshold = {}', self._split_bias_threshold)
+        self._low_freq_cutoff = low_freq_cutoff
+        self._length_cutoff = length_cutoff
+        self._min_short_freq = min_short_string_freq
+        self._normal_exponent = normal_exponent
+        self._dict_word_exponent = dict_word_exponent
+        self._camel_bias = camel_bias
         if not self._dictionary:
             if __debug__: log('initializing dictionary and stemmer')
             from nltk.corpus import words as nltk_words
@@ -302,23 +342,21 @@ class Ronin(object):
             self._dictionary.update(nltk_wordnet.all_lemma_names())
             self._stemmer = SnowballStemmer('english')
 
-        self._low_freq_cutoff = low_freq_cutoff
-        self._length_cutoff = length_cutoff
-        self._min_short_freq = min_short_string_freq
-        self._normal_exponent = normal_exponent
-        self._dict_word_exponent = dict_word_exponent
-        self._permissive = permissive
 
-
-    def split(self, identifier):
+    def split(self, identifier, keep_numbers=True):
         '''Split the given identifier string at token boundaries using a
         combination of heuristics and token frequency tables.  This function
-        produces a list of strings as its output.  The Ronin algorithm is a
-        modification of the Samurai described by Eric Enslen, Emily Hill,
-        Lori Pollock and K. Vijay-Shanker in a 2009 paper titled "Mining
-        source code to automatically split identifiers for software analysis"
-        (Proceedings of the 6th IEEE International Working Conference on
-        Mining Software Repositories, 2009).
+        produces a list of strings as its output.
+
+        Parameter 'keep_numbers' determines the handling of numbers.  When
+        True, all digits are kept.  When False, the behavior is as follows:
+        leading digits are removed from the identifier string but other
+        digits are retained, then hard + camel-case splitting is performed,
+        then (1) embedded digits are removed if they appear at the tail ends
+        of tokens in the split, but not if they appear in the middle of
+        tokens or are recognized as being part of common abbreviations such
+        as 'utf8'; and (2) tokens that consist ONLY of digits are removed.
+        The result may be more suitable for text analysis or machine learning.
 
         If you have a set of frequencies for your project, you can supply
         them to the function init(...) once, before making calls to split().
@@ -330,14 +368,27 @@ class Ronin(object):
         the first time split(...) is called, you may experience a noticeable
         delay while it calls init(...) to load various data files.  Subsequent
         invocations of split(...) will not be as slow.
+
+        The Ronin algorithm is a significant modification of the Samurai
+        algorithm described by Eric Enslen, Emily Hill, Lori Pollock and
+        K. Vijay-Shanker in a 2009 paper titled "Mining source code to
+        automatically split identifiers for software analysis" (Proceedings
+        of the 6th IEEE International Working Conference on Mining Software
+        Repositories, 2009).
         '''
         splits = []
-        if __debug__: log('splitting {}', identifier)
-        if not self._global_freq:
+        if not self._frequencies:
             self.init()
-        score = self._generate_scoring_function()
-        for s in simple_split(identifier):
-            # Look for upper-to-lower case transitions
+        if __debug__: log('split "{}" (keep num: {})', identifier, keep_numbers)
+        initial_list = heuristic_split(identifier, keep_numbers=keep_numbers)
+        if __debug__: log('initial split = {}', initial_list)
+        for s in initial_list:
+            if __debug__: log('considering {}', s)
+            if self._is_recognized(s):
+                if __debug__: log('{} is a recognized token; using it as-is', s)
+                splits = splits + [s]
+                continue
+            # Look for upper-to-lower case transitions.
             transition = re.search(r'[A-Z][a-z]', s)
             if not transition:
                 if __debug__: log('no upper-to-lower case transition in {}', s)
@@ -345,24 +396,25 @@ class Ronin(object):
             else:
                 i = transition.start(0)
                 if __debug__: log('case transition: {}{}', s[i], s[i+1])
-                if i > 0:
-                    camel_score = score(s[i:])
-                    if __debug__: log('"{}" score {}', s[i:], camel_score)
-                else:
-                    camel_score = score(s)
-                    if __debug__: log('"{}" score {}', s, camel_score)
+                camel = s[i:] if i > 0 else s
+                camel_score = self._score(camel)
+                if __debug__: log('{} score = {}', camel, camel_score)
                 alt = s[i+1:]
-                alt_score = score(alt)
-                if __debug__: log('"{}" alt score {}', alt, alt_score)
-                if camel_score >= self._rescale(alt, alt_score):
-                    if __debug__: log('{} > {} ==> better to include uppercase letter',
-                                      camel_score, self._rescale(alt, alt_score))
-                    if i > 0:
-                        parts = [s[0:i], s[i:]]
-                    else:
-                        parts = [s]
+                # Logically, this next comparison should use the raw_score
+                # rather than the adjusted or rescaled score.  Yet doing that
+                # leads to worse performance even after optimizing the
+                # parameters, and I don't know why.  Using the adjusted score
+                # here seems like an apples-to-oranges comparison because of
+                # the heavy rescaling applied by _adjusted_score().  Still,
+                # the optimization results are clear and consistent.
+                alt_score = self._adjusted_score(alt) * self._camel_bias
+                if camel_score >= alt_score:
+                    if __debug__: log('{} >= {} ==> include uppercase letter',
+                                      camel_score, alt_score)
+                    parts = [s[0:i], s[i:]] if i > 0 else [s]
                 else:
-                    if __debug__: log('not better to include uppercase letter')
+                    if __debug__: log("{} < {} ==> don't include uppercase letter",
+                                      camel_score, alt_score)
                     parts = [s[0:i+1], s[i+1:]]
                 if __debug__: log('split outcome: {}', parts)
             splits = splits + parts
@@ -370,42 +422,40 @@ class Ronin(object):
         if __debug__: log('turning over to _same_case_split: {}', splits)
         results = []
         for token in splits:
-            if __debug__: log('splitting {}', token)
-            results = results + self._same_case_split(token, score, score(token))
+            token_score = self._adjusted_score(token)
+            results = results + self._same_case_split(token, token_score)
         if __debug__: log('final results: {}', results)
         return results
 
 
-    def _same_case_split(self, s, score, score_ns=.0000005):
-        n = len(s)
-        if n > 1 and self._in_dictionary(s):
+    def _same_case_split(self, s, score_ns=.0000005):
+        if self._in_dictionary(s):
             if __debug__: log('{} is a dictionary word; using it as-is', s)
             return [s]
-        i         = 0
-        split     = None
+        n = len(s)
+        i = 1
+        split = None
         max_score = -1
-        threshold = max(self._rescale(s, score(s)), score_ns)
+        threshold = max(self._adjusted_score(s), score_ns)
         if __debug__: log('_same_case_split on {}, threshold {}', s, threshold)
         while i < n:
             left       = s[0:i]
             right      = s[i:n]
-            score_l    = self._rescale(left, score(left))
-            score_r    = self._rescale(right, score(right))
+            score_l    = self._adjusted_score(left)
+            score_r    = self._adjusted_score(right)
             prefix     = self._is_prefix(left)
-            to_split_l = score_l > threshold
             to_split_r = score_r > threshold
+            to_split_l = score_l > threshold
+            if self._split_bias > 0:
+                to_split_l = to_split_l or score_r > self._split_bias_threshold
 
-            if __debug__: log('|{} : {}| score l = {:6f} r = {:6f}'
-                              ' split l:r = {:1b}:{:1b}'
-                              ' prefix = {:1b} th = {} max_score = {}',
-                              left, right, score_l, score_r,
-                              to_split_l, to_split_r, prefix, threshold, max_score)
+            if __debug__: log('|{} : {}| score l = {:.4f} r = {:.4f}'
+                              ' split l:r = {:1b}:{:1b} pref = {:1b}'
+                              ' th = {:4f} max_score = {:.4f}',
+                              left, right, score_l, score_r, to_split_l,
+                              to_split_r, prefix, threshold, max_score)
 
-            try_alternate = (not prefix and to_split_l)
-            if not prefix and ((self._permissive and (to_split_l or to_split_r))
-                               or (to_split_l and to_split_r)):
-                if not self._permissive:
-                    try_alternate = False
+            if not prefix and to_split_l and to_split_r:
                 if __debug__: log('--> case 1')
                 if (score_l + score_r) > max_score:
                     if __debug__: log('({} + {}) > {}', score_l, score_r, max_score)
@@ -414,14 +464,12 @@ class Ronin(object):
                     if __debug__: log('case 1 split result: {}', split)
                 else:
                     if __debug__: log('no split for case 1')
-                    if self._permissive:
-                        try_alternate = True
-            if try_alternate:
-                if __debug__: log('--> case 2 -- recursive call on "{}"', s[i:n])
-                tmp = self._same_case_split(right, score, score_ns)
+            elif not prefix and to_split_l:
+                if __debug__: log('--> case 2 -- recursive call on "{}"', right)
+                tmp = self._same_case_split(right, score_ns)
                 if tmp[0] != right:
                     split = [left] + tmp
-                    if __debug__: log('case 2 split result: {}', split)
+                    if __debug__: log('case 2 split result: {}', tmp)
                 else:
                     if __debug__: log('no split for case 2')
             i += 1
@@ -430,47 +478,63 @@ class Ronin(object):
         return result
 
 
-    def _generate_scoring_function(self):
-        '''Returns a closure that computes a score using the frequency tables
-        with which the splitter has been initialized.
-        '''
-        def scoring_function(w):
-            if w in self._global_freq:
-                return self._global_freq[w]
-            else:
-                w = w.lower()
-                if w in self._global_freq:
-                    return self._global_freq[w]
-                else:
-                    return 0
-
-        return scoring_function
+    def _score(self, token):
+        '''Return the raw score for the given 'token'.'''
+        lower_token = token.lower()
+        if lower_token in common_terms_with_numbers:
+            return self._highest_freq
+        elif token in self._frequencies:
+            return self._frequencies[token]
+        elif lower_token in self._frequencies:
+            return self._frequencies[lower_token]
+        else:
+            return 0
 
 
-    def _rescale(self, token, score_value):
-        if len(token) <= self._length_cutoff:
+    def _rescaled_score(self, token):
+        '''Return the rescaled score for the given 'token', without applying
+        the thresholding step that _adjusted_score() applies.'''
+        return self._rescale(token, self._score(token))
+
+
+    def _adjusted_score(self, token):
+        '''Return the thresholded, adjusted score for the given 'token'.'''
+        length = len(token)
+        if length == 0:
+            return 0
+        score_value = self._score(token)
+        if length <= self._length_cutoff:
             if score_value <= self._min_short_freq:
                 return 0
         if score_value <= self._low_freq_cutoff:
             return 0
-        elif self._in_dictionary(token):
+        return self._rescale(token, score_value)
+
+
+    def _rescale(self, token, score_value):
+        '''Rescale the given token score value.'''
+        if self._in_dictionary(token):
             return math.pow(score_value, self._dict_word_exponent)
         else:
             return math.pow(score_value, self._normal_exponent)
 
 
     def _in_dictionary(self, word):
+        if len(word) <= 2:
+            # There are too many uncommon 2-letter words in the dictionary,
+            # and returning true for them worsens splitting performance.
+            return False
         word = word.lower()
         return (word in self._dictionary
                 or self._stemmer.stem(word) in self._dictionary)
 
 
+    def _is_recognized(self, token):
+        return token.lower() in common_terms_with_numbers
+
+
     def _is_prefix(self, s):
-        return s.lower() in _PREFIX_LIST
-
-
-    def _is_suffix(self, s):
-        return s.lower() in _SUFFIX_LIST
+        return s.lower() in _PREFIXES
 
 
 # Module entry points.
