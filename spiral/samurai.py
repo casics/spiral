@@ -113,8 +113,8 @@ import os
 import re
 import sys
 
-# NOTE: to turn on debugging, make sure python -O was *not* used when this
-# file was byte-compiled, and then change logging.INFO to logging.DEBUG below.
+# NOTE: to turn on debugging, make sure python -O was *not* used to start
+# python, then set the logging level to DEBUG *before* loading this module.
 # Conversely, to optimize out all the debugging code, use python -O or -OO
 # and everything inside "if __debug__" blocks will be entirely compiled out.
 if __debug__:
