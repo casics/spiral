@@ -73,7 +73,7 @@ except:
 # Global definitions.
 # .............................................................................
 
-_delimiter_chars = '$~_.:/'
+_delimiter_chars = '$~_.:/@'
 _two_capitals    = re.compile(r'[A-Z][A-Z]')
 _camel_case      = re.compile(r'((?<=[a-z])[A-Z])')
 
