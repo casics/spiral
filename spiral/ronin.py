@@ -224,7 +224,7 @@ class Ronin(object):
     # to see the particular errors that arose and finally settling on values
     # that produced slightly natural-looking splits.  The final scores were:
     #   Ludiso: 2190/2663   (82.24% accuracy)
-    #   INTT:   17094/18772 (91.06% accuracy)
+    #   INTT:   17096/18772 (91.07% accuracy)
     # The optimization algorithm that produced these values was GDE3 in
     # Platypus.  (Aside: GDE3 seemed to converge so slowly compared to NSGAII
     # and IBEA that I had given up on it.  One night I ended up letting them
