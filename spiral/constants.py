@@ -8,6 +8,14 @@ List of numbers that are commonly put after some other strings, to form
 symbols such as "int32", "float64", etc.
 '''
 
+# General principles for the following:
+# 1. Only put in terms that at least one digit in them.
+# 2. Avoid 2-character sequences, because they match too many things and
+#    cause too many bad splits.
+# 3. Stick to computing terms that many people use or have used, not stuff
+#    that a particular program happens to use.
+# 4. Genreally, avoid packages for particular languages, like "urllib3".
+#
 # Sources for the following:
 # - https://en.wikipedia.org/wiki/List_of_computing_and_IT_abbreviations
 # - https://en.wikipedia.org/wiki/List_of_codecs
@@ -37,10 +45,15 @@ common_terms_with_numbers = {
     'base64',
     'bit7',
     'bzip2',
+    'bz2',
     'c2a',
     'c4s',
     'color16',
     'color32',
+    'com1',
+    'com2',
+    'com3',
+    'com4',
     'crc32',
     'cvv2',
     'd2d',
@@ -48,12 +61,14 @@ common_terms_with_numbers = {
     'd3d',
     'db2',
     'db9',
+    'des3',
     'ds0',
     'ds1',
     'e2e',
     'e3cp',
     'ec2',
     'f2f',
+    'f95',
     'float128',
     'float32',
     'float64',
@@ -73,6 +88,7 @@ common_terms_with_numbers = {
     'g729',
     'g729a',
     'g729d',
+    'gtk3',
     'h261',
     'h262',
     'h263',
@@ -84,6 +100,7 @@ common_terms_with_numbers = {
     'hi422p',
     'hi444pp',
     'hl7',
+    'html3',
     'html4',
     'html5',
     'i10n',
@@ -92,6 +109,7 @@ common_terms_with_numbers = {
     'i386',
     'ia32',
     'ia64',
+    'id10t',
     'ie10',
     'ie11',
     'ie12',
@@ -131,6 +149,10 @@ common_terms_with_numbers = {
     'l3tp',
     'log10',
     'log2',
+    'lpt1',
+    'lpt2',
+    'lpt4',
+    'lpt4',
     'md5',
     'mp3',
     'mp4',
@@ -160,6 +182,7 @@ common_terms_with_numbers = {
     'px64',
     'python2',
     'python3',
+    'qt4',
     'rj11',
     'rj45',
     'rot13',
@@ -173,6 +196,8 @@ common_terms_with_numbers = {
     'sint32',
     'sint64',
     'sint8',
+    'smb2',
+    'socks4',
     'ss7',
     'sys32',
     'uint16',
