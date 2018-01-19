@@ -191,7 +191,18 @@ should be lower-cased before the results are compared to the expected values.
     # Need custom variator to mix integers with reals in Platypus.
     variator=CompoundOperator(SBX(), HUX(), PM(), BitFlip())
     with ProcessPoolEvaluator(threads) as evaluator:
-        runner = algorithm(problem, evaluator=evaluator, variator=variator)
+        # Some additional args are necessary for some Platypus algorithms.
+        # This is a grungy way to do it, but oh well.
+        if optimizer == 'NSGAIII':
+            runner = algorithm(problem, evaluator=evaluator, variator=variator,
+                               divisions_outer=50)
+        elif optimizer == 'EpsMOEA':
+            runner = algorithm(problem, evaluator=evaluator, variator=variator,
+                               epsilons=0.05)
+        elif optimizer == 'OMOPSO':
+            runner = algorithm(problem, evaluator=evaluator, epsilons=0.05)
+        else:
+            runner = algorithm(problem, evaluator=evaluator, variator=variator)
         runner.run(runs)
     msg('Done after {}s'.format(time() - start))
 
