@@ -75,12 +75,12 @@ def find_parameters(vars):
     global tests
     global lowest
 
-    var_low_freq_cutoff       = int(vars[0])
+    var_low_freq_cutoff       = vars[0]
     # A length_cutoff of 2 is consistently the best performing in all my
     # tests, and plus, allowing 1 sometimes leads to hanging up Platypus and
     # I don't know why.  So I've stopped trying to vary this one.
     var_length_cutoff         = 2
-    var_min_short_string_freq = int(vars[1]*10)
+    var_min_short_string_freq = vars[1]*10
     var_normal_exponent       = vars[2]
     var_dict_word_exponent    = vars[3]
     var_camel_bias            = vars[4]
@@ -127,41 +127,13 @@ def find_parameters(vars):
     return results
 
 
-# Platypus hacks.
-# .............................................................................
-
-# This is a cheat to allow mixing Real and Integer types for the variables.
-# Platypus's definition of Real is very simple and Integer can be made quite
-# compatible with it, but Platypus' default definition of Integer is not, and
-# if you mix Real and Integer in the variables list, you will get an error.
-# The hack below relies on the fact that Platypus checks all the other
-# variables against the type of the first one.  So, we make an Integer type
-# that is based on Real and use that type as a variable other than the first
-# variable in the list.  (Hey, don't judge me for this, okay?)
-
-class MyInteger(Real):
-    def __init__(self, range_min, range_max):
-        super(Type, self).__init__()
-        self.elements = range(range_min, range_max)
-        self.min_value = range_min
-        self.max_value = range_max - 1
-
-    def rand(self):
-        indices = list(range(1, len(self.elements)))
-        random.shuffle(indices)
-        return self.elements[indices[0]]
-
-    def __str__(self):
-        return "MyInteger(%d, %d)" % (len(self.elements), self.size)
-
-
 # Code to run the optimization.
 # .............................................................................
 
 @plac.annotations(
     threads   = ('number of threads to use',                'option', 't'),
     runs      = ('number of runs to do',                    'option', 'r'),
-    optimizer = ('Playtupus algorithm to use',              'option', 'a'),
+    optimizer = ('Platypus algorithm to use',               'option', 'a'),
     inputs    = 'files of test cases',
 )
 
@@ -204,9 +176,9 @@ should be lower-cased before the results are compared to the expected values.
     # Define our problem: N variables and M objectives.
     problem = Problem(6, len(tests))
     problem.function = find_parameters
-    problem.types[:] = [MyInteger(0, 500),      # low_freq_cutoff
-                        #MyInteger(0, 3),       # length cutoff (see above)
-                        MyInteger(1000, 50000), # min_short_freq/10
+    problem.types[:] = [Integer(0, 500),      # low_freq_cutoff
+                        #Integer(0, 3),       # length cutoff (see above)
+                        Integer(1000, 50000), # min_short_freq/10
                         Real(0.05, 0.8),        # normal_exponent
                         Real(0.05, 0.8),        # dict_word_exponent
                         Real(0.001, 10),        # camel_bias
@@ -216,8 +188,10 @@ should be lower-cased before the results are compared to the expected values.
     start = time()
     threads = int(threads)
     runs = int(runs)
+    # Need custom variator to mix integers with reals in Platypus.
+    variator=CompoundOperator(SBX(), HUX(), PM(), BitFlip())
     with ProcessPoolEvaluator(threads) as evaluator:
-        runner = algorithm(problem, evaluator=evaluator)
+        runner = algorithm(problem, evaluator=evaluator, variator=variator)
         runner.run(runs)
     msg('Done after {}s'.format(time() - start))
 
