@@ -5,32 +5,16 @@ Introduction
 ------------
 
 This uses a multiobjective optimization approach to tune the parameter values
-for the arguments of `generate_nonsense_detector()`.  It uses the Python
-package Platypus, specifically its implementation of the multiobjective
-optimization algorithm NSGA-II ("Non-dominated Sorting Genetic Algorithm").
-The objective functions minimize by this script are the errors on a
-combination of positive and negative examples of nonsense strings.
-
-The nature of the optimization problem is such that it is not possible to
-find an optimal behavior for the nonsense string evaluator: the evaluator
-will always produce some number of false positives on real identifier strings
-and some number of false negatives on random text strings, and pushing one
-number lower will push the other one higher.  The optimization process here
-will do its best, but will ultimately only result in a surface and we have to
-pick what matters to us subjectively.  The result of running this
-optimization script will be a file containing a list of lines of values.
-Each line will have a set of false positive and false negative values and the
-parameter values that led to those particular results.  In the final usage of
-this optimization script, I sorted these results and then picked a
-(subjective) balance of very low false positives and some not-too-high false
-negatives.
+for Ronin.  It uses the Python package Platypus.  The objective function
+minimized by this script is the number of failures to correctly split
+identifiers from one or more oracle files.
 
 Usage
 -----
 
 This is a simple script that you run by executing it on the command line:
 
-  ./optimize.py
+  ./optimize.py ../../tests/data/intt.tsv:lower ../../tests/data/ludiso.tsv
 
 The output is written to a file named `optimization-output.txt`.  You have to
 sort the lines of the file, then look at the results and decide which
@@ -48,7 +32,6 @@ Copyright
 Copyright (c) 2017 by the California Institute of Technology.  This software
 was developed as part of the CASICS project, the Comprehensive and Automated
 Software Inventory Creation System.  For more, visit http://casics.org.
-
 '''
 
 from   contextlib import redirect_stdout
