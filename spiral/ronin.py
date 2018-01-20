@@ -311,19 +311,16 @@ class Ronin(object):
         if frequencies:
             self._frequencies = frequencies
         if not self._frequencies:
-            if __debug__: log('loading frequency pickle {}'
+            if __debug__: log('  loading frequency pickle {}'
                               .format(_DEFAULT_FREQ_PICKLE))
             if os.path.exists(_DEFAULT_FREQ_PICKLE):
                 self._frequencies = frequencies_from_pickle(_DEFAULT_FREQ_PICKLE)
             else:
                 raise ValueError('Cannot read default frequencies pickle file "{}"'
                                  .format(_DEFAULT_FREQ_PICKLE))
-        if __debug__: log('frequency table has {} entries', len(self._frequencies))
         self._highest_freq = max(self._frequencies.values())
-        if __debug__: log('highest frequency = {}', self._highest_freq)
         self._split_bias = split_bias
         self._split_bias_threshold = self._split_bias * self._highest_freq
-        if __debug__: log('split bias threshold = {}', self._split_bias_threshold)
         self._low_freq_cutoff = low_freq_cutoff
         self._length_cutoff = length_cutoff
         self._min_short_freq = min_short_string_freq
@@ -331,7 +328,7 @@ class Ronin(object):
         self._dict_word_exponent = dict_word_exponent
         self._camel_bias = camel_bias
         if not self._dictionary:
-            if __debug__: log('initializing dictionary and stemmer')
+            if __debug__: log('  initializing dictionary and stemmer')
             from nltk.corpus import words as nltk_words
             from nltk.corpus import wordnet as nltk_wordnet
             from nltk.stem import SnowballStemmer
@@ -341,6 +338,17 @@ class Ronin(object):
             self._dictionary = set(nltk_words.words())
             self._dictionary.update(nltk_wordnet.all_lemma_names())
             self._stemmer = SnowballStemmer('english')
+        if __debug__:
+            log('  frequency table has {} entries', len(self._frequencies))
+            log('  highest frequency = {}', self._highest_freq)
+            log('  dictionary has {} entries', len(self._dictionary))
+            log('  split bias threshold = {}', self._split_bias_threshold)
+            log('  low frequency cutoff = {}', self._low_freq_cutoff)
+            log('  length cutoff = {}', self._length_cutoff)
+            log('  minimum short string frequency = {}', self._min_short_freq)
+            log('  normal exponent = {}', self._normal_exponent)
+            log('  dictionary word exponent = {}', self._dict_word_exponent)
+            log('  camel bias = {}', self._camel_bias)
 
 
     def split(self, identifier, keep_numbers=True):
