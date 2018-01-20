@@ -195,7 +195,7 @@ should be lower-cased before the results are compared to the expected values.
         # This is a grungy way to do it, but oh well.
         if optimizer == 'NSGAIII':
             runner = algorithm(problem, evaluator=evaluator, variator=variator,
-                               divisions_outer=50)
+                               divisions_outer=25)
         elif optimizer == 'EpsMOEA':
             runner = algorithm(problem, evaluator=evaluator, variator=variator,
                                epsilons=0.05)
@@ -212,10 +212,11 @@ should be lower-cased before the results are compared to the expected values.
                 o = solution.objectives
                 v = solution.variables
                 # Note: make sure to match multipliers used in find_parameters()
+                # Note: v[0] and v[1] print as lists of binary b/c of Platypus bug
                 msg('scores = {} low_freq_cutoff = {}, length_cutoff = {}'
                     ' min_short_freq = {} norm_exp = {:.5f}'
                     ' dict_exp = {:.5f} camel_bias = {:.5f} split_bias = {:.8f}'
-                    .format(o, v[0], 2, v[1]*10, v[2], v[3], v[4], v[5]/100))
+                    .format(o, bin2int(v[0]), 2, bin2int(v[1])*10, v[2], v[3], v[4], v[5]/100))
 
 
 # Utility functions.
@@ -294,6 +295,9 @@ def color_codes(flags):
         attrib.append('dark')
     return (prefix, color, attrib)
 
+
+def bin2int(bin_list):
+    return int(''.join(str(int(x)) for x in bin_list), 2)
 
 
 # Entry point.
