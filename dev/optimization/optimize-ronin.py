@@ -134,10 +134,11 @@ def find_parameters(vars):
     threads   = ('number of threads to use',                'option', 't'),
     runs      = ('number of runs to do',                    'option', 'r'),
     optimizer = ('Platypus algorithm to use',               'option', 'a'),
+    seed      = ('set the random seed explicitly',          'option', 'S'),
     inputs    = 'files of test cases',
 )
 
-def main(optimizer='NSGAII', threads=6, runs=20000, *inputs):
+def main(optimizer='NSGAII', threads=6, runs=20000, seed=None, *inputs):
     '''Files of test cases should be files in TSV format.  The file name can
 end in the suffix ':lower' to indicate that the strings produced by splitting
 should be lower-cased before the results are compared to the expected values.
@@ -188,6 +189,8 @@ should be lower-cased before the results are compared to the expected values.
     start = time()
     threads = int(threads)
     runs = int(runs)
+    if seed:
+        random.seed(seed)
     # Need custom variator to mix integers with reals in Platypus.
     variator=CompoundOperator(SBX(), HUX(), PM(), BitFlip())
     with ProcessPoolEvaluator(threads) as evaluator:
