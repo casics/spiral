@@ -209,6 +209,9 @@ should be lower-cased before the results are compared to the expected values.
         runner.run(runs)
     msg('Done after {}s'.format(time() - start))
 
+    arg0_decoder = problem.types[0].decode
+    arg1_decoder = problem.types[1].decode
+
     with open('optimization-results-' + optimizer + '.txt', "w") as f:
         with redirect_stdout(f):
             for solution in runner.result:
@@ -219,7 +222,8 @@ should be lower-cased before the results are compared to the expected values.
                 msg('scores = {} low_freq_cutoff = {}, length_cutoff = {}'
                     ' min_short_freq = {} norm_exp = {:.5f}'
                     ' dict_exp = {:.5f} camel_bias = {:.5f} split_bias = {:.8f}'
-                    .format(o, bin2int(v[0]), 2, bin2int(v[1])*10, v[2], v[3], v[4], v[5]/100))
+                    .format(o, arg0_decoder(v[0]), 2, arg1_decoder(v[1])*10,
+                            v[2], v[3], v[4], v[5]/100))
 
 
 # Utility functions.
@@ -297,10 +301,6 @@ def color_codes(flags):
     if 'dark' in flags:
         attrib.append('dark')
     return (prefix, color, attrib)
-
-
-def bin2int(bin_list):
-    return int(''.join(str(int(x)) for x in bin_list), 2)
 
 
 # Entry point.
