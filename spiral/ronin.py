@@ -173,20 +173,13 @@ _DEFAULT_FREQ_PICKLE = os.path.join(_DEFAULT_FREQ_DIR, 'data/frequencies.pklz')
 '''Pickle file storing the default global frequency table shipped with this
 module.  This constant is only read by ronin.init(...).'''
 
-# The list of prefixes from the web page for Samurai,
+# The list of prefixes and suffixes came from the web page for Samurai,
 # https://hiper.cis.udel.edu/Samurai/Samurai.html
 #
 # Enslen, E., Hill, E., Pollock, L., & Vijay-Shanker, K. (2009).
 # Mining source code to automatically split identifiers for software analysis.
 # In Proceedings of the 6th IEEE International Working Conference on Mining
 # Software Repositories (MSR'09) (pp. 71-80).
-#
-# Note: Samurai uses both a list of prefixes and a list of suffixes, but in
-# my testing with Ronin (which has a number of algorithmic changes compared
-# to Samurai), using an optimization approach to find parameter values,
-# Ronin's performance was not improved by using the suffix test.  This may be
-# due to Ronin's use of a dictionary check, which Samurai doesn't use, or due
-# to other changes.  Ronin doesn't use the suffix test for that reason.
 
 _PREFIXES = {'afro', 'ambi', 'amphi', 'ana', 'anglo', 'apo', 'astro', 'bi',
              'bio', 'circum', 'cis', 'co', 'col', 'com', 'con', 'contra',
@@ -200,6 +193,57 @@ _PREFIXES = {'afro', 'ambi', 'amphi', 'ana', 'anglo', 'apo', 'astro', 'bi',
              'proto', 'pyro', 're', 'retro', 'semi', 'socio', 'supra',
              'sur', 'sy', 'syl', 'sym', 'syn', 'tele', 'trans', 'tri',
              'twi', 'ultra', 'un', 'uni'}
+
+_SUFFIXES = {'a', 'ac', 'acea', 'aceae', 'acean', 'aceous', 'ade', 'aemia',
+             'agogue', 'aholic', 'al', 'ales', 'algia', 'amine', 'ana',
+             'anae', 'ance', 'ancy', 'androus', 'andry', 'ane', 'ar',
+             'archy', 'ard', 'aria', 'arian', 'arium', 'ary', 'ase',
+             'athon', 'ation', 'ative', 'ator', 'atory', 'biont', 'biosis',
+             'cade', 'caine', 'carp', 'carpic', 'carpous', 'cele', 'cene',
+             'centric', 'cephalic', 'cephalous', 'cephaly', 'chory',
+             'chrome', 'cide', 'clast', 'clinal', 'cline', 'coccus',
+             'coel', 'coele', 'colous', 'cracy', 'crat', 'cratic',
+             'cratical', 'cy', 'cyte', 'derm', 'derma', 'dermatous', 'dom',
+             'drome', 'dromous', 'eae', 'ectomy', 'ed', 'ee', 'eer', 'ein',
+             'eme', 'emia', 'en', 'ence', 'enchyma', 'ency', 'ene', 'ent',
+             'eous', 'er', 'ergic', 'ergy', 'es', 'escence', 'escent',
+             'ese', 'esque', 'ess', 'est', 'et', 'eth', 'etic', 'ette',
+             'ey', 'facient', 'fer', 'ferous', 'fic', 'fication', 'fid',
+             'florous', 'foliate', 'foliolate', 'fuge', 'ful', 'fy',
+             'gamous', 'gamy', 'gen', 'genesis', 'genic', 'genous', 'geny',
+             'gnathous', 'gon', 'gony', 'grapher', 'graphy', 'gyne',
+             'gynous', 'gyny', 'ia', 'ial', 'ian', 'iana', 'iasis',
+             'iatric', 'iatrics', 'iatry', 'ibility', 'ible', 'ic',
+             'icide', 'ician', 'ick obsolete', 'ics', 'idae', 'ide', 'ie',
+             'ify', 'ile', 'ina', 'inae', 'ine', 'ineae', 'ing', 'ini',
+             'ious', 'isation', 'ise', 'ish', 'ism', 'ist', 'istic',
+             'istical', 'istically', 'ite', 'itious', 'itis', 'ity', 'ium',
+             'ive', 'ization', 'ize', 'kinesis', 'kins', 'latry', 'lepry',
+             'ling', 'lite', 'lith', 'lithic', 'logue', 'logist', 'logy',
+             'ly', 'lyse', 'lysis', 'lyte', 'lytic', 'lyze', 'mancy',
+             'mania', 'meister', 'ment', 'merous', 'metry', 'mo', 'morph',
+             'morphic', 'morphism', 'morphous', 'mycete', 'mycetes',
+             'mycetidae', 'mycin', 'mycota', 'mycotina', 'ness', 'nik',
+             'nomy', 'odon', 'odont', 'odontia', 'oholic', 'oic', 'oid',
+             'oidea', 'oideae', 'ol', 'ole', 'oma', 'ome', 'ont', 'onym',
+             'onymy', 'opia', 'opsida', 'opsis', 'opsy', 'orama', 'ory',
+             'ose', 'osis', 'otic', 'otomy', 'ous', 'para', 'parous',
+             'pathy', 'ped', 'pede', 'penia', 'phage', 'phagia', 'phagous',
+             'phagy', 'phane', 'phasia', 'phil', 'phile', 'philia',
+             'philiac', 'philic', 'philous', 'phobe', 'phobia', 'phobic',
+             'phony', 'phore', 'phoresis', 'phorous', 'phrenia', 'phyll',
+             'phyllous', 'phyceae', 'phycidae', 'phyta', 'phyte',
+             'phytina', 'plasia', 'plasm', 'plast', 'plasty', 'plegia',
+             'plex', 'ploid', 'pode', 'podous', 'poieses', 'poietic',
+             'pter', 'rrhagia', 'rrhea', 'ric', 'ry', 's', 'scopy',
+             'sepalous', 'sperm', 'sporous', 'st', 'stasis', 'stat',
+             'ster', 'stome', 'stomy', 'taxy', 'th', 'therm', 'thermal',
+             'thermic', 'thermy', 'thon', 'thymia', 'tion', 'tome', 'tomy',
+             'tonia', 'trichous', 'trix', 'tron', 'trophic', 'tropism',
+             'tropous', 'tropy', 'tude', 'ty', 'ular', 'ule', 'ure',
+             'urgy', 'uria', 'uronic', 'urous', 'valent', 'virile',
+             'vorous', 'xor', 'y', 'yl', 'yne', 'zoic', 'zoon', 'zygous',
+             'zyme'}
 
 
 # Main class
@@ -216,26 +260,26 @@ class Ronin(object):
     _normal_exponent      = None
     _dict_word_exponent   = None
     _camel_bias           = None
-    _split_bias           = 0.00002
+    _split_bias           = 0.0000005
     _split_bias_threshold = 0
+    _exact_case           = False
 
-    # The following parameter values came from optimizing against both the
-    # Ludiso and INTT data sets simultaneously, then doing some hand tweaking
-    # to see the particular errors that arose and finally settling on values
-    # that produced slightly natural-looking splits.  The final scores were:
-    #   Ludiso: 2190/2663   (82.24% accuracy)
-    #   INTT:   17096/18772 (91.07% accuracy)
-    # The optimization algorithm that produced these values was GDE3 in
-    # Platypus.  (Aside: GDE3 seemed to converge so slowly compared to NSGAII
-    # and IBEA that I had given up on it.  One night I ended up letting them
-    # all run anyway, and lo and behold, GDE3 found a parameter combination
-    # that was actually in a different range than the others, and this is the
-    # one I ended up keeping.  Moral: optimization is like a box of
-    # chocolates -- you never know what you're gonna get.)
+    # The default parameter values came from optimizing against the INTT data
+    # set/oracle, then doing some hand tweaking.  The final score for INTT was:
+    #    INTT:   17229/18772 (91.78%)
+    # Using the Ludiso oracle/data set as a test set, with the same parameter
+    # values, the following is the accuracy:
+    #    Ludiso: 2206/2663   (82.84%)
+    # It's possible to optimize against both data sets simultaneously and
+    # gain slightly improved scores that way, but then testing against either
+    # one would not be a reasonable test of accuracy -- it would be more of a
+    # test of recall.  I feel it's more fair to use one for training and the
+    # other for testing.
     #
-    def init(self, frequencies=None, low_freq_cutoff=279, length_cutoff=2,
-             min_short_string_freq=273000, normal_exponent=0.3138,
-             dict_word_exponent=0.25, camel_bias=0.7, split_bias=0.0000283):
+    def init(self, frequencies=None, exact_case=False, low_freq_cutoff=314,
+             length_cutoff=2, min_short_string_freq=290000,
+             normal_exponent=0.115, dict_word_exponent=0.0873,
+             camel_bias=1, split_bias=0.0000005):
         '''Initialize internal frequency files for the Ronin split() function.
         Note: the first time this function is called, it will take noticeable
         time because it will load a global frequency table (unless one is
@@ -251,6 +295,20 @@ class Ronin(object):
         etc., then splitting them to produce individual identifier fragments,
         and finally curating the result manually.)  If not provided, Ronin will
         use a default table.
+
+        Parameter 'exact_case' indicates whether the identifiers in the
+        frequency table should be kept as-is, or whether only the lower-case
+        form of the identifiers should be kept.  If False (the default),
+        different case variations will be discarded and the maximum frequency
+        of any case variation of a given identifier will be kept.  (E.g., if
+        both 'foo' with frequency 20 and 'FOO' with frequency 1000 are
+        present, the final table will have an entry for 'foo' with value
+        1000.)  If True, all the case variants in the frequency table will be
+        kept, and during scoring, the following alternatives will be tried in
+        this order when searching for tokens in the table: try exact case
+        match first, then capitalizing the token ('fOoO' -> 'Fooo'), and
+        finally lower-casing the token ('Foo' or 'FOO' -> 'foo').  The first
+        match will be returned.
 
         This init function also accepts a number of optional arguments that
         control internal parameter values.  The default values were
@@ -306,18 +364,30 @@ class Ronin(object):
 
         An optimization utility is included in the Spiral source code
         distribution, to help find parameter values for the above.
+
         '''
         if __debug__: log('init()')
-        if frequencies:
-            self._frequencies = frequencies
         if not self._frequencies:
-            if __debug__: log('  loading frequency pickle {}'
-                              .format(_DEFAULT_FREQ_PICKLE))
-            if os.path.exists(_DEFAULT_FREQ_PICKLE):
-                self._frequencies = frequencies_from_pickle(_DEFAULT_FREQ_PICKLE)
+            if not frequencies:
+                if __debug__: log('  loading frequency pickle {}'
+                                  .format(_DEFAULT_FREQ_PICKLE))
+                if os.path.exists(_DEFAULT_FREQ_PICKLE):
+                    frequencies = frequencies_from_pickle(_DEFAULT_FREQ_PICKLE)
+                else:
+                    raise ValueError('Cannot read frequencies pickle file "{}"'
+                                     .format(_DEFAULT_FREQ_PICKLE))
+            if exact_case:
+                self._frequencies = frequencies
             else:
-                raise ValueError('Cannot read default frequencies pickle file "{}"'
-                                 .format(_DEFAULT_FREQ_PICKLE))
+                newdict = {}
+                for key, value in frequencies.items():
+                    lc_key = key.lower()
+                    if lc_key in newdict:
+                        newdict[lc_key] = max(value, newdict[lc_key])
+                    else:
+                        newdict[lc_key] = value
+                self._frequencies = newdict
+        self._exact_case = exact_case
         self._highest_freq = max(self._frequencies.values())
         self._split_bias = split_bias
         self._split_bias_threshold = self._split_bias * self._highest_freq
@@ -349,6 +419,7 @@ class Ronin(object):
             log('  normal exponent = {}', self._normal_exponent)
             log('  dictionary word exponent = {}', self._dict_word_exponent)
             log('  camel bias = {}', self._camel_bias)
+            log('  exact_case = {}', self._exact_case)
 
 
     def split(self, identifier, keep_numbers=True):
@@ -451,15 +522,15 @@ class Ronin(object):
             right      = s[i:n]
             score_l    = self._adjusted_score(left)
             score_r    = self._adjusted_score(right)
-            prefix     = self._is_prefix(left)
+            prefix     = self._is_prefix(left) or self._is_suffix(right)
             to_split_r = score_r > threshold
             to_split_l = score_l > threshold
             if self._split_bias > 0:
                 to_split_l = to_split_l or score_r > self._split_bias_threshold
 
             if __debug__: log('|{} : {}| score l = {:.4f} r = {:.4f}'
-                              ' split l:r = {:1b}:{:1b} pref = {:1b}'
-                              ' th = {:4f} max_score = {:.4f}',
+                              ' split l:r = {:1b}:{:1b} prfx = {:1b}'
+                              ' th = {:4f} max_s = {:.4f}',
                               left, right, score_l, score_r, to_split_l,
                               to_split_r, prefix, threshold, max_score)
 
@@ -488,15 +559,21 @@ class Ronin(object):
 
     def _score(self, token):
         '''Return the raw score for the given 'token'.'''
-        lower_token = token.lower()
-        if lower_token in common_terms_with_numbers:
+        lc_token = token.lower()
+        if lc_token in common_terms_with_numbers:
             return self._highest_freq
-        elif token in self._frequencies:
-            return self._frequencies[token]
-        elif lower_token in self._frequencies:
-            return self._frequencies[lower_token]
+        if self._exact_case:
+            if token in self._frequencies:
+                return self._frequencies[token]
+            cap_token = token.capitalize()
+            if cap_token in self._frequencies:
+                return self._frequencies[cap_token]
+            if lc_token in self._frequencies:
+                return self._frequencies[lc_token]
         else:
-            return 0
+            if lc_token in self._frequencies:
+                return self._frequencies[lc_token]
+        return 0
 
 
     def _rescaled_score(self, token):
@@ -543,6 +620,10 @@ class Ronin(object):
 
     def _is_prefix(self, s):
         return s.lower() in _PREFIXES
+
+
+    def _is_suffix(self, s):
+        return s.lower() in _SUFFIXES
 
 
 # Module entry points.
