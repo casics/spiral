@@ -13,8 +13,8 @@ need for automated methods for splitting identifiers of classes, functions,
 variables, and other entities into word-like constituents.  A number of
 methods have been proposed an implemented to perform identifier splitting.
 
-Ronin is a Python module that implements a variation of the algorithm known
-as Samurai, described in the following paper:
+Ronin is a Python module that implements an approach that was originally
+based on Samurai, described in the following paper:
 
   Enslen, E., Hill, E., Pollock, L., & Vijay-Shanker, K. (2009).  Mining
   source code to automatically split identifiers for software analysis.  In
@@ -29,7 +29,8 @@ without having to use a local frequency table derived from a source code base
 being processed.  Ronin uses only a global frequency table derived from
 mining tens of thousands of GitHub project repositories containing Python
 source code files.  It also uses a dictionary of English words (from NLTK) to
-help produce more "natural" splits.
+help produce more "natural" splits.  Ronin has a number of notable changes
+compared to Samurai and many tunable parameters.
 
 Usage
 -----
@@ -37,10 +38,10 @@ Usage
 Note #1: for fastest performance, using the optimization options provided by
 the Python interpreter (i.e., the options -O or -OO).
 
-Note #2: If you do not call init(...) separately, then the first time you
-call ronin.split(...) it will call init(...) itself.  This will make the
-first call to split(...)  take much longer to run than subsequent invocation.
-Please rest assured that this is only a one-time startup cost.
+Note #2: If you do not call init() separately, then the first time you call
+ronin.split(...) it will call init() itself.  This will make the first call
+to split(...)  take much longer to run than subsequent invocation.  Please
+rest assured that this is only a one-time startup cost for a given session.
 
 The simplest way to use this module in a Python program is to import the
 module from the Spiral package and then call ronin.split(...) with a
@@ -359,12 +360,10 @@ class Ronin(object):
            identfiers without camel-case transitions.  This helps in some
            situations, but it also tends to cause more spurious splits.  A
            value of zero turns this off.  A non-zero value needs to be
-           extremely small to have any effect.  (The original algorithm for
-           Samurai, on which Ronin is based, uses the equivalent of zero.)
+           extremely small to have any effect.
 
         An optimization utility is included in the Spiral source code
         distribution, to help find parameter values for the above.
-
         '''
         if __debug__: log('init()')
         if not self._frequencies:
