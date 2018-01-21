@@ -116,8 +116,9 @@ exceptions = {'ipython', 'caching', 'revoked', 'doxygen', 'cpython',
               'latin5', 'iframe', 'sensei', 'jquery', 'gunzip', 'xapian',
               'xenstore', 'csharp', 'eeprom', 'iomega', 'asynchronously',
               'wunderground', 'texinfo', 'pdb', 'imdb', 'gdb', 'ipdb',
-              'mongodb', 'dynamodb', 'mysqldb', 'bsddb', 'innodb', 'couchdb'
-              'zodb', 'pydb', 'uuid', 'uid'}
+              'mongodb', 'dynamodb', 'mysqldb', 'mysql', 'bsddb', 'innodb',
+              'couchdb' 'zodb', 'pydb', 'uuid', 'uid', 'bio', 'mercurio',
+              'stdio', 'settings', 'sets', 'setup', 'setups'}
 
 def filter(s):
     '''Return True if the token should be filtered out.'''
@@ -153,9 +154,8 @@ def filter(s):
     # Remove things that are reognizable words bracketed by a single letter,
     # such as "openerp" or 'xflush'. This requires care, because some things
     # are tokens we do want in the frequency table, so the rules below are
-    # very strict and there's an exceptions table.  Note: don't remove things
-    # only because they have a number at the end.  Example: lib2to3 should be
-    # left in the frequency table.
+    # very limited.  Note: don't remove things only because they have a
+    # number at the end.  Example: lib2to3 should be left in.
     if len(s) > 5 and s not in dictionary and stemmer.stem(s) not in dictionary:
         if s[1:] in dictionary and not s.startswith('pre'):
             print('dropping {}'.format(s, s[1:]))
@@ -166,11 +166,17 @@ def filter(s):
 
     # Remove things that end with certain strings that are recognizable as
     # common contractions for separate words.
-    if ((len(s) > 2 and s.endswith('db'))
-        or (len(s) > 4 and s.endswith('info'))
-        or (len(s) > 3 and s.endswith('ptr'))
-        or (len(s) > 7 and s.endswith('pointer'))
-        or (len(s) > 2 and s.endswith('id') and s not in dictionary)):
+    if (s not in dictionary
+        and ((len(s) > 2 and s.endswith('db'))
+             or (len(s) > 2 and s.endswith('io'))
+             or (len(s) > 4 and s.endswith('info'))
+             or (len(s) > 3 and s.endswith('ptr'))
+             or (len(s) > 7 and s.endswith('pointer'))
+             or (len(s) > 2 and s.endswith('id'))
+             or (len(s) > 2 and s.startswith('my'))
+             or (len(s) > 3 and (s.startswith('get')
+                                 or s.startswith('put')
+                                 or s.startswith('set'))))):
         print('dropping {}'.format(s))
         return True
 
