@@ -15,6 +15,7 @@ import sys
 from nltk.corpus import words as nltk_words
 from nltk.corpus import wordnet as nltk_wordnet
 from nltk.stem import SnowballStemmer
+import enchant
 
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), "../spiral"))
@@ -28,18 +29,20 @@ import frequencies
 # .............................................................................
 
 @plac.annotations(
-    debug      = ('drop into ipdb opening files',        'flag',   'd'),
     inputfile  = ('input text file',                     'option', 'i'),
     outputfile = ('output file',                         'option', 'o'),
+    threshold  = ('minimum frequency threshold',         'option', 't'),
+    debug      = ('drop into ipdb opening files',        'flag',   'd'),
 )
 
-def main(inputfile=None, outputfile=None, debug=False):
+def main(inputfile=None, outputfile=None, threshold=0, debug=False):
     '''The intput file should be a plain-text table of frequencies, with each
 line consisting of a token, some whitespace, and an integer; alternatively,
 the input file can be a csv file in which the first column has the tokens and
 the second column has the frequencies.  The output format is based on the
 file extension: .csv for a CSV file, .pklz for a compressed pickle file.
 '''
+    threshold = int(threshold)
     if not inputfile:
         raise SystemExit('Missing input file argument.')
     if not outputfile:
@@ -58,11 +61,14 @@ file extension: .csv for a CSV file, .pklz for a compressed pickle file.
             for line in input:
                 total += 1
                 (token, frequency) = line.split(delimiter)
+                if int(frequency) < threshold:
+                    msg('{} below threshold -- dropping {}', frequency, token)
+                    continue
                 if filter(token):
                     continue
                 data[token] = int(frequency)
                 kept += 1
-            print('{} strings read, {} kept.'.format(total, kept))
+            msg('{} strings read, {} kept.', total, kept)
         if outputfile.endswith('.csv'):
             with open(outputfile, 'w') as output:
                 for token, frequency in sorted(data.items(), reverse=True,
@@ -73,9 +79,9 @@ file extension: .csv for a CSV file, .pklz for a compressed pickle file.
                     output.write('\n')
         else:
             frequencies.save_frequencies_to_pickle(data, outputfile)
-        print('Output saved in {}.'.format(outputfile))
+        msg('Output saved in {}.', outputfile)
     except Exception as err:
-        print(err)
+        msg(err)
 
 
 # Filter.
@@ -97,8 +103,24 @@ file extension: .csv for a CSV file, .pklz for a compressed pickle file.
 # (based on experimentation) does a reasonable job of removing one kind of
 # pattern.
 
-dictionary = set(nltk_words.words())
-dictionary.update(nltk_wordnet.all_lemma_names())
+common_elements = {'list', 'version', 'input', 'output', 'pointer', 'ptr',
+                   'data', 'tuple', 'print', 'image', 'err', 'error', 'node',
+                   'code', 'mode', 'value', 'number', 'handler', 'test',
+                   'error', 'io', 'db', 'info', 'id', 'set', 'put', 'get',
+                   'unit', 'encode', 'decode', 'opt', 'format', 'fmt',
+                   'text', 'file', 'dir', 'check', 'start', 'stop',
+                   'string', 'offset', 'mem', 'field', 'host', 'var', 'char',
+                   'next', 'prev', 'filter', 'config'}
+
+common_ends   = common_elements
+common_starts = set(common_elements)
+common_starts.update(['my', 'is', 'make'])
+
+nltk_dictionary = set(nltk_words.words())
+nltk_dictionary.update(nltk_wordnet.all_lemma_names())
+
+enchant_dictionary = enchant.Dict('en_US')
+
 stemmer = SnowballStemmer('english')
 
 # The following exceptions were obtained while trying to find ways of filtering
@@ -108,32 +130,34 @@ stemmer = SnowballStemmer('english')
 # This is imperfect, but IMHO better than nothing.
 
 exceptions = {'ipython', 'caching', 'revoked', 'doxygen', 'cpython',
-              'slashless', 'python2', 'python3', 'exotica', 'mathematica',
+              'slashless', 'exotica', 'mathematica',
               'chunker', 'arctanh', 'arcsinh', 'arccosh', 'arcsech',
               'coursera', 'activex', 'butterworth', 'utorrent', 'minimap',
-              'xdisplay', 'xwindows', 'icontact', 'icalendar', 'jinja2',
-              'crypto', 'kmeans', 'interp', 'approx', 'swift2', 'swift3',
-              'latin5', 'iframe', 'sensei', 'jquery', 'gunzip', 'xapian',
-              'xenstore', 'csharp', 'eeprom', 'iomega', 'asynchronously',
-              'wunderground', 'texinfo', 'pdb', 'imdb', 'gdb', 'ipdb',
-              'mongodb', 'dynamodb', 'mysqldb', 'mysql', 'bsddb', 'innodb',
-              'couchdb' 'zodb', 'pydb', 'uuid', 'uid', 'bio', 'mercurio',
-              'stdio', 'settings', 'sets', 'setup', 'setups'}
+              'xdisplay', 'xwindows', 'icontact', 'icalendar',
+              'crypto', 'kmeans', 'interp', 'approx', 'latin5', 'iframe',
+              'sensei', 'jquery', 'gunzip', 'xapian', 'xenstore', 'csharp',
+              'eeprom', 'iomega', 'asynchronously', 'wunderground',
+              'texinfo', 'pdb', 'imdb', 'gdb', 'ipdb', 'mongodb', 'dynamodb',
+              'mysqldb', 'mysql', 'bsddb', 'innodb', 'couchdb' 'zodb',
+              'pydb', 'uuid', 'uid', 'bio', 'mercurio', 'stdio', 'stderr',
+              'stdout', 'settings', 'sets', 'setup', 'setups', 'unicode',
+              'cached', 'codecs', 'ident', 'coords', 'iscsi', 'dirichlet'}
 
 def filter(s):
     '''Return True if the token should be filtered out.'''
     # Filter out pure numbers.
     # Fast number detector from https://stackoverflow.com/a/23639915/743730
     if s.replace('.', '', 1).isdigit():
-        print('dropping {}'.format(s))
+        msg('dropping {}', s)
         return True
+
     # Filter out strings containing 3 upper case followed by 4 lower case
     # letters or vice versa.  This is a conservative test for one kind of
     # multiword string that seems to produce few-to-no false positives in my
     # testing.
     if (re.search('[A-Z][A-Z][A-Z][a-z][a-z][a-z][a-z]', s)
         or re.search('[A-Z][A-Z][A-Z][A-Z][a-z][a-z][a-z]', s)):
-        print('dropping {}'.format(s))
+        msg('dropping {}', s)
         return True
 
     # Remaining tests are all based on lower case version of string.
@@ -148,7 +172,7 @@ def filter(s):
     # risk is low enough that it's okay to do this.  Besides, for Spiral, we
     # have a separate list of acronyms, and so they will be handled elsewhere.
     if re.search('^(e|error|page|line|case|test)[0-9]+$', s):
-        print('dropping {}'.format(s))
+        msg('dropping {}', s)
         return True
 
     # Remove things that are reognizable words bracketed by a single letter,
@@ -156,31 +180,59 @@ def filter(s):
     # are tokens we do want in the frequency table, so the rules below are
     # very limited.  Note: don't remove things only because they have a
     # number at the end.  Example: lib2to3 should be left in.
-    if len(s) > 5 and s not in dictionary and stemmer.stem(s) not in dictionary:
-        if s[1:] in dictionary and not s.startswith('pre'):
-            print('dropping {}'.format(s, s[1:]))
+    if len(s) > 5 and not in_dictionary(s):
+        if in_dictionary(s[1:]) and not s.startswith('pre'):
+            msg('dropping {}', s)
             return True
-        if s[:-1] in dictionary and s[-1] not in ['s', 'r', 'd', 'g', 'y']:
-            print('dropping {}'.format(s, s[:-1]))
+        if in_dictionary(s[:-1]) and s[-1] not in ['s', 'r', 'd', 'g', 'y']:
+            msg('dropping {}', s)
             return True
 
     # Remove things that end with certain strings that are recognizable as
     # common contractions for separate words.
-    if (s not in dictionary
-        and ((len(s) > 2 and s.endswith('db'))
-             or (len(s) > 2 and s.endswith('io'))
-             or (len(s) > 4 and s.endswith('info'))
-             or (len(s) > 3 and s.endswith('ptr'))
-             or (len(s) > 7 and s.endswith('pointer'))
-             or (len(s) > 2 and s.endswith('id'))
-             or (len(s) > 2 and s.startswith('my'))
-             or (len(s) > 3 and (s.startswith('get')
-                                 or s.startswith('put')
-                                 or s.startswith('set'))))):
-        print('dropping {}'.format(s))
+    if multiple_words_starting_with(s, common_starts):
+        msg('dropping {}', s)
+        return True
+
+    if multiple_words_ending_with(s, common_ends):
+        msg('dropping {}', s)
         return True
 
     return False
+
+
+def multiple_words_ending_with(s, endings_list):
+    for ending in endings_list:
+        # 2 chars more than the length of the ending, to be safer
+        minlength = len(ending) + 2
+        if (not in_dictionary(s) and s.endswith(ending) and len(s) >= minlength):
+            return True
+    return False
+
+
+def multiple_words_starting_with(s, starts_list):
+    for start in starts_list:
+        # 2 chars more than the length of the ending, to be safer
+        minlength = len(start) + 2
+        if (not in_dictionary(s) and s.startswith(start) and len(s) >= minlength):
+            return True
+    return False
+
+
+def in_dictionary(s):
+    stemmed = stemmer.stem(s)
+    return (s in nltk_dictionary or stemmed in nltk_dictionary
+            or enchant_dictionary.check(s) or enchant_dictionary.check(stemmed))
+
+
+def msg(string, *other_args):
+    '''Like the standard print(), but treats the first argument as a string
+    with format specifiers, and also flushes the output immediately. Flushing
+    immediately is useful when piping the output of a script, because Python
+    by default will buffer the output in that situation and this makes it
+    very difficult to see what is happening in real time.
+    '''
+    print(string.format(*other_args), flush=True)
 
 
 # Entry point.
