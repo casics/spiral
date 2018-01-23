@@ -411,6 +411,30 @@ class Ronin(object):
             self._dictionary = set(nltk_words.words())
             self._dictionary.update(nltk_wordnet.all_lemma_names())
             self._stemmer = SnowballStemmer('english')
+        # Generate scoring function based on exact case.  Do it here so we
+        # don't have to keep testing the variable at run-time.
+        if exact_case:
+            def score_function(token):
+                lc_token = token.lower()
+                if lc_token in common_terms_with_numbers:
+                    return self._highest_freq
+                if token in self._frequencies:
+                    return self._frequencies[token]
+                cap_token = token.capitalize()
+                if cap_token in self._frequencies:
+                    return self._frequencies[cap_token]
+                if lc_token in self._frequencies:
+                    return self._frequencies[lc_token]
+                return 0
+        else:
+            def score_function(token):
+                lc_token = token.lower()
+                if lc_token in common_terms_with_numbers:
+                    return self._highest_freq
+                if lc_token in self._frequencies:
+                    return self._frequencies[lc_token]
+                return 0
+        self._score = score_function
         if __debug__:
             log('  frequency table has {} entries', len(self._frequencies))
             log('  highest frequency = {}', self._highest_freq)
@@ -558,25 +582,6 @@ class Ronin(object):
         result = split if split else [s]
         if __debug__: log('<-- returning {}', result)
         return result
-
-
-    def _score(self, token):
-        '''Return the raw score for the given 'token'.'''
-        lc_token = token.lower()
-        if lc_token in common_terms_with_numbers:
-            return self._highest_freq
-        if self._exact_case:
-            if token in self._frequencies:
-                return self._frequencies[token]
-            cap_token = token.capitalize()
-            if cap_token in self._frequencies:
-                return self._frequencies[cap_token]
-            if lc_token in self._frequencies:
-                return self._frequencies[lc_token]
-        else:
-            if lc_token in self._frequencies:
-                return self._frequencies[lc_token]
-        return 0
 
 
     def _rescaled_score(self, token):
