@@ -613,9 +613,8 @@ class Ronin(object):
 
 
     def _in_dictionary(self, word):
-        if len(word) <= 2:
-            # There are too many uncommon 2-letter words in the dictionary,
-            # and returning true for them worsens splitting performance.
+        if len(word) <= 1:
+            # Counting single-letter words turns out to be unhelpful.
             return False
         word = word.lower()
         return (word in self._dictionary
