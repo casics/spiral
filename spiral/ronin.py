@@ -267,10 +267,10 @@ class Ronin(object):
 
     # The default parameter values came from optimizing against the INTT data
     # set/oracle, then doing some hand tweaking.  The final score for INTT was:
-    #    INTT:   17230/18772 (91.79%)
+    #    INTT:   17260/18772 (92%)
     # Using the Ludiso oracle/data set as a test set, with the same parameter
     # values, the following is the accuracy:
-    #    Ludiso: 2207/2663   (82.88%)
+    #    Ludiso: 2211/2663   (83%)
     # It's possible to optimize against both data sets simultaneously and
     # gain slightly improved scores that way, but then testing against either
     # one would not be a reasonable test of accuracy -- it would be more of a
@@ -282,9 +282,9 @@ class Ronin(object):
     # inverse camel-case identifiers like "GPSmodule".
     #
     def init(self, frequencies=None, exact_case=False, low_freq_cutoff=350,
-             length_cutoff=2, min_short_string_freq=285000,
-             normal_exponent=0.3, dict_word_exponent=0.225,
-             camel_bias=0.017, split_bias=0.0000067):
+             length_cutoff=2, min_short_string_freq=270000,
+             normal_exponent=0.179, dict_word_exponent=0.1293,
+             camel_bias=1, split_bias=0.000001):
         '''Initialize internal frequency files for the Ronin split() function.
         Note: the first time this function is called, it will take noticeable
         time because it will load a global frequency table (unless one is
@@ -411,8 +411,8 @@ class Ronin(object):
             self._dictionary = set(nltk_words.words())
             self._dictionary.update(nltk_wordnet.all_lemma_names())
             self._stemmer = SnowballStemmer('english')
-        # Generate scoring function based on exact case.  Do it here so we
-        # don't have to keep testing the variable at run-time.
+        # Generate scoring function based on exact case flag.  Do it here so
+        # we don't have to keep testing the variable at run-time.
         if exact_case:
             def score_function(token):
                 lc_token = token.lower()
