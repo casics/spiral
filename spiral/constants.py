@@ -14,18 +14,23 @@ symbols such as "int32", "float64", etc.
 #    cause too many bad splits.
 # 3. Stick to computing terms that many people use or have used, not stuff
 #    that a particular program happens to use.
-# 4. Genreally, avoid packages for particular languages, like "urllib3".
+# 4. Generally, avoid packages for particular languages, like "urllib3".
 #
 # Sources for the following:
 # - https://en.wikipedia.org/wiki/List_of_computing_and_IT_abbreviations
 # - https://en.wikipedia.org/wiki/List_of_codecs
 # - https://en.wikipedia.org/wiki/Comparison_of_video_codecs
+# - the book 'The Definitivei Guide to iReport' by Toffoli, 2007
 # - various lists and dictionaries of computing terms found by Googling
 # - personal experience
-
+ 
 common_terms_with_numbers = {
     '1st',
+    '1to1',
+    '2of7',
     '2nd',
+    '3d',
+    '3of9',
     '3ivx',
     '3rd',
     '88k',
@@ -47,7 +52,16 @@ common_terms_with_numbers = {
     'bzip2',
     'bz2',
     'c2a',
+    'c3p0',
     'c4s',
+    'cast5',
+    'ciks1',
+    'coconut98',
+    'code128',
+    'code128a',
+    'code128b',
+    'code128c',
+    'code39',
     'color16',
     'color32',
     'com1',
@@ -56,6 +70,9 @@ common_terms_with_numbers = {
     'com4',
     'crc32',
     'cvv2',
+    'ddr2',
+    'ddr3',
+    'ddr4',
     'd2d',
     'd2d2t',
     'd3d',
@@ -64,11 +81,14 @@ common_terms_with_numbers = {
     'des3',
     'ds0',
     'ds1',
+    'ean128',
+    'ean13',
     'e2e',
     'e3cp',
     'ec2',
     'f2f',
     'f95',
+    'fat32',
     'float128',
     'float32',
     'float64',
@@ -121,6 +141,7 @@ common_terms_with_numbers = {
     'imap4',
     'int128',
     'int16',
+    'int2of5',
     'int32',
     'int64',
     'int8',
@@ -128,6 +149,7 @@ common_terms_with_numbers = {
     'ipv4',
     'ipv6',
     'ipv6cp',
+    'iso[0-9]{2,}',
     'ix86',
     'j2ee',
     'j2me',
@@ -137,6 +159,13 @@ common_terms_with_numbers = {
     'java7',
     'java8',
     'java9',
+    'jdk10',
+    'jdk11',
+    'jdk12',
+    'jdk13',
+    'jdk14',
+    'jdk15',
+    'jdk16',
     'jpeg2000',
     'koi8r',
     'l10n',
@@ -149,6 +178,7 @@ common_terms_with_numbers = {
     'l3tp',
     'log10',
     'log2',
+    'log4j',
     'lpt1',
     'lpt2',
     'lpt4',
@@ -161,7 +191,9 @@ common_terms_with_numbers = {
     'mpeg25',
     'mpeg3',
     'mpeg4',
+    'multi2',
     'ns3',
+    'nw7',
     'o2o',
     'oauth1',
     'oauth2',
@@ -183,10 +215,14 @@ common_terms_with_numbers = {
     'python2',
     'python3',
     'qt4',
+    'r2d2',
+    'rc5',
+    'rc6',
+    'rfc[0-9]{3,}',
     'rj11',
     'rj45',
     'rot13',
-    's3',
+    'scc14shippingcode',
     'sha1',
     'sha1024',
     'sha256',
@@ -196,14 +232,19 @@ common_terms_with_numbers = {
     'sint32',
     'sint64',
     'sint8',
+    'sm4',
     'smb2',
     'socks4',
     'ss7',
+    'sscc18',
+    'std2of5',
     'sys32',
     'uint16',
     'uint32',
     'uint64',
     'uint8',
+    'usd3',
+    'usd4',
     'utf16',
     'utf32',
     'utf8',
@@ -225,6 +266,9 @@ common_terms_with_numbers = {
     'w3c',
     'win32',
     'win64',
+    'windows7',
+    'windows10',
+    'windows11',
     'x11',
     'x11r4',
     'x11r5',
@@ -259,8 +303,11 @@ common_terms_with_numbers = {
     'x75',
     'x86',
     'xga2',
+    'xml10',
+    'xml11',
     'y2k',
 }
 '''
-Set of common abbreviations and symbols that contain numbers.
+Set of common abbreviations and symbols that contain numbers. Entries can be
+regular expressions.
 '''
