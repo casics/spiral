@@ -410,6 +410,7 @@ class Ronin(object):
             # the next two dicts were people's proper names. Not useful.
             self._dictionary = set(nltk_words.words())
             self._dictionary.update(nltk_wordnet.all_lemma_names())
+            self._dictionary.update(special_computing_terms)
             self._stemmer = SnowballStemmer('english')
         # Generate scoring function based on exact case flag.  Do it here so
         # we don't have to keep testing the variable at run-time.
