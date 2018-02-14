@@ -186,6 +186,10 @@ def elementary_split(identifier):
 _exceptions_re = re.compile(r'(' + '|'.join(common_terms_with_numbers) + ')', re.I)
 _common_suffixes = tuple(common_suffix_numbers)
 
+# This next pattern matches hex numbers, octal numbers, and other numbers, in
+# that order. Order is important, or else we'd split hex numbers.
+_numbers_re = re.compile(r'(0x[0-9a-f]+l?|0[1-7]{2,}|\d+)', re.I)
+
 def heuristic_split(identifier, keep_numbers=True, exceptions=None):
     '''Split identifiers by hard delimiters such as underscores, digits, and
     forward camel case only, i.e., lower-to-upper case transitions.  This
@@ -217,17 +221,17 @@ def heuristic_split(identifier, keep_numbers=True, exceptions=None):
         # sake of speed.  Basic idea: keep each token that is in the exceptions
         # list or ends with a common suffix; otherwise, split the token by digits
         # and clean up the resulting digit strings.
-        parts = flatten(s if (s.lower() in exceptions
+        parts = flatten(s if (_exceptions_re.match(s)
                               or (not s[0].isdigit() and s.endswith(_common_suffixes)))
-                        else filter(bool, re.split(r'(\d+)', s))
+                        else filter(bool, _numbers_re.split(s))
                         for s in preliminary.split())
     else:
         # Variation of the previous thing that will remove leading and trailing
         # digits of tokens, possibly removing the tokens altogether if the only
         # characters it has are digits.
-        parts = flatten(s.strip() if (s.lower() in exceptions
+        parts = flatten(s.strip() if (_exceptions_re.match(s)
                                       or (not s[0].isdigit() and s.endswith(_common_suffixes)))
                         else filter(bool, [t.lstrip(string.digits).rstrip(string.digits)
-                                           for t in re.split(r'\d+', s)])
+                                           for t in _numbers_re.split(s)])
                         for s in preliminary.split())
     return list(parts)
