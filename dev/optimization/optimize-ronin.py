@@ -77,16 +77,16 @@ def find_parameters(vars):
 
     var_low_freq_cutoff       = vars[0]
     # A length_cutoff of 2 is consistently the best performing in all my
-    # tests, and plus, allowing 1 sometimes leads to hanging up Platypus and
-    # I don't know why.  So I've stopped trying to vary this one.
-    var_length_cutoff         = 2
-    var_min_short_string_freq = vars[1]*10
-    var_normal_exponent       = vars[2]
-    var_dict_word_exponent    = vars[3]
-    var_camel_bias            = vars[4]
+    # tests, and in addition, allowing 1 sometimes leads to *extremely* long
+    # times to split some identifiers.  So I've stopped trying to vary this.
+    var_length_cutoff         = 2 #vars[1]
+    var_min_short_string_freq = vars[2]*10
+    var_normal_exponent       = vars[3]
+    var_dict_word_exponent    = vars[4]
+    var_camel_bias            = vars[5]
     # Platypus seems to have trouble with varying really small decimals, so I
     # use a larger number in the setup and then divide here to make it smaller.
-    var_split_bias            = vars[5]/100
+    var_split_bias            = vars[6]/1000
 
     ronin.init(low_freq_cutoff=var_low_freq_cutoff,
                length_cutoff=var_length_cutoff,
@@ -119,7 +119,7 @@ def find_parameters(vars):
             failures_text += '{}: {}'.format(name, failures)
 
     msg('{} f_cut = {} len_cut = {} min_sh_f = {} n_exp = {:.4f}'
-        ' d_exp = {:.4f} camel_bias = {:.4f} split_bias = {:.7f}'
+        ' d_exp = {:.4f} camel_bias = {:.4f} split_bias = {:.8f}'
         .format(failures_text, var_low_freq_cutoff, var_length_cutoff,
                 var_min_short_string_freq, var_normal_exponent,
                 var_dict_word_exponent, var_camel_bias, var_split_bias))
@@ -138,13 +138,13 @@ def find_parameters(vars):
     inputs    = 'files of test cases',
 )
 
-def main(optimizer='NSGAII', threads=6, runs=20000, seed=None, *inputs):
+def main(optimizer='NSGAII', threads=6, runs=15000, seed=None, *inputs):
     '''Files of test cases should be files in TSV format.  The file name can
 end in the suffix ':lower' to indicate that the strings produced by splitting
 should be lower-cased before the results are compared to the expected values.
 '''
     global tests
-    global index
+    global lowest
 
     if not inputs:
         raise SystemExit('Need to provide paths to files of test cases')
@@ -168,22 +168,24 @@ should be lower-cased before the results are compared to the expected values.
                 (id, expected) = line.rstrip().split('\t')
                 test_set['cases'][id] = expected.split(',')
         tests.append(test_set)
-    msg('Read {} test sets'.format(len(tests)))
+    msg('Read {} sets of test cases'.format(len(tests)))
 
     # Create array of running lowest scores.
     for test_set in tests:
         lowest.append(10000000)         # Just needs to be some high number.
 
     # Define our problem: N variables and M objectives.
-    problem = Problem(6, len(tests))
+    args =  [Integer(0, 500),      # low_freq_cutoff
+             Integer(0, 3),        # length cutoff (but see above)
+             Integer(5000, 50000), # min_short_freq/10
+             Real(0.05, 0.8),      # normal_exponent
+             Real(0.05, 0.8),      # dict_word_exponent
+             Real(0, 10),          # camel_bias
+             Real(0, 0.01)]        # split_bias*1000
+
+    problem = Problem(len(args), len(tests))
     problem.function = find_parameters
-    problem.types[:] = [Integer(0, 500),      # low_freq_cutoff
-                        #Integer(0, 3),       # length cutoff (see above)
-                        Integer(1000, 50000), # min_short_freq/10
-                        Real(0.05, 0.8),        # normal_exponent
-                        Real(0.05, 0.8),        # dict_word_exponent
-                        Real(0.001, 10),        # camel_bias
-                        Real(0, 0.01)]          # split_bias*100
+    problem.types[:] = args
 
     # Let's get it done.
     start = time()
@@ -192,7 +194,7 @@ should be lower-cased before the results are compared to the expected values.
     if seed:
         random.seed(seed)
     # Need custom variator to mix integers with reals in Platypus.
-    variator=CompoundOperator(SBX(), HUX(), PM(), BitFlip())
+    variator = CompoundOperator(SBX(), HUX(), PM(), BitFlip())
     with ProcessPoolEvaluator(threads) as evaluator:
         # Some additional args are necessary for some Platypus algorithms.
         # This is a grungy way to do it, but oh well.
@@ -211,19 +213,19 @@ should be lower-cased before the results are compared to the expected values.
 
     arg0_decoder = problem.types[0].decode
     arg1_decoder = problem.types[1].decode
+    arg2_decoder = problem.types[2].decode
 
     with open('optimization-results-' + optimizer + '.txt', "w") as f:
         with redirect_stdout(f):
             for solution in runner.result:
                 o = solution.objectives
                 v = solution.variables
-                # Note: make sure to match multipliers used in find_parameters()
-                # Note: v[0] and v[1] print as lists of binary b/c of Platypus bug
                 msg('scores = {} low_freq_cutoff = {}, length_cutoff = {}'
                     ' min_short_freq = {} norm_exp = {:.5f}'
-                    ' dict_exp = {:.5f} camel_bias = {:.5f} split_bias = {:.8f}'
-                    .format(o, arg0_decoder(v[0]), 2, arg1_decoder(v[1])*10,
-                            v[2], v[3], v[4], v[5]/100))
+                    ' dict_exp = {:.5f} camel_bias = {:.5f} split_bias = {:.9f}'
+                    # Note: MAKE SURE TO MATCH MULTIPLIERS USED IN find_parameters()
+                    .format(o, arg0_decoder(v[0]), arg1_decoder(v[1]),
+                            arg2_decoder(v[2])*10, v[3], v[4], v[5], v[6]/1000))
 
 
 # Utility functions.
