@@ -1,4 +1,4 @@
-'''Ronin: identifier splitter based on the Samurai algorithm
+'''Ronin: an identifier splitter based on the Samurai algorithm
 
 Introduction
 ------------
@@ -65,7 +65,7 @@ computations involved in the frequencies is only done once.)  Use the keyword
 argument 'global_freq':
 
     from spiral import ronin
-    ronin.init(global_freq=myfrequencies)
+    ronin.init(global_freq = myfrequencies)
     result = ronin.split('someidentifier')
 
 The format of the value given to 'global_freq' should be a dictionary where
@@ -93,7 +93,7 @@ turn on logging by setting the logging level to "logging.DEBUG" before
 importing the Ronin module.  Here is an example:
 
   import logging
-  logging.basicConfig(level=logging.DEBUG, format='')
+  logging.basicConfig(level = logging.DEBUG, format = '')
   from spiral import ronin
 
 Logging will be printed to the standard output stream.  Note: this will only
@@ -141,7 +141,7 @@ import sys
 # and everything inside "if __debug__" blocks will be entirely compiled out.
 if __debug__:
     import logging
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level = logging.INFO)
     logger = logging.getLogger('Ronin')
     def log(s, *other_args): logger.debug('Ronin: ' + s.format(*other_args))
 
