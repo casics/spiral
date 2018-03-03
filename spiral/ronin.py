@@ -538,8 +538,8 @@ class Ronin(object):
 
 
     def _same_case_split(self, s, score_ns=.0000005):
-        if self._in_dictionary(s):
-            if __debug__: log('{} is a dictionary word; using it as-is', s)
+        if self._is_recognized(s):
+            if __debug__: log('{} is recognized; using it as-is', s)
             return [s]
         new_split = None
         max_score = -1
@@ -612,10 +612,18 @@ class Ronin(object):
 
     def _rescale(self, token, score_value):
         '''Rescale the given token score value.'''
-        if self._in_dictionary(token):
+        if self._is_recognized(token):
             return math.pow(score_value, self._dict_word_exponent)
         else:
             return math.pow(score_value, self._normal_exponent)
+
+
+    def _is_recognized(self, token):
+        tlower = token.lower()
+        return (tlower in common_terms_with_numbers
+                or tlower in special_computing_terms
+                or self._stem(tlower) in special_computing_terms
+                or self._in_dictionary(token))
 
 
     def _in_dictionary(self, word):
@@ -623,12 +631,16 @@ class Ronin(object):
             # Counting single-letter words turns out to be unhelpful.
             return False
         word = word.lower()
-        return (word in self._dictionary
-                or self._stemmer.stem(word) in self._dictionary)
+        return (word in self._dictionary or self._stem(word) in self._dictionary)
 
 
-    def _is_recognized(self, token):
-        return token.lower() in common_terms_with_numbers
+    def _stem(self, token):
+        # The NLTK stemmer sometimes gives weird results, and the particular
+        # case of weird technical terms ending in 's' has been most troublesome.
+        if len(token) > 1 and token[-1:] == 's':
+            return token[:-1]
+        else:
+            return self._stemmer.stem(token)
 
 
     def _is_prefix(self, s):
