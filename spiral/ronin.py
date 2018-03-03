@@ -267,10 +267,10 @@ class Ronin(object):
 
     # The default parameter values came from optimizing against the INTT data
     # set/oracle, then doing some hand tweaking.  The final score for INTT was:
-    #    INTT:   17260/18772 (92%)
+    #    INTT:   17303/18772 (92.17%)
     # Using the Ludiso oracle/data set as a test set, with the same parameter
     # values, the following is the accuracy:
-    #    Ludiso: 2211/2663   (83%)
+    #    Ludiso: 2219/2663   (83.33%)
     # It's possible to optimize against both data sets simultaneously and
     # gain slightly improved scores that way, but then testing against either
     # one would not be a reasonable test of accuracy -- it would be more of a
