@@ -541,48 +541,51 @@ class Ronin(object):
         if self._in_dictionary(s):
             if __debug__: log('{} is a dictionary word; using it as-is', s)
             return [s]
-        n = len(s)
-        i = 1
-        split = None
+        new_split = None
         max_score = -1
+        max_index = len(s) - 1
         threshold = max(self._adjusted_score(s), score_ns)
         if __debug__: log('_same_case_split on {}, threshold {}', s, threshold)
-        while i < n:
-            left       = s[0:i]
-            right      = s[i:n]
-            score_l    = self._adjusted_score(left)
-            score_r    = self._adjusted_score(right)
-            prefix     = self._is_prefix(left) or self._is_suffix(right)
-            to_split_r = score_r > threshold
-            to_split_l = score_l > threshold
+        i = 0
+        while i < max_index:
+            i += 1
+            left    = s[0:i]
+            right   = s[i:]
+            score_l = self._adjusted_score(left)
+            score_r = self._adjusted_score(right)
+            prefix  = self._is_prefix(left) or self._is_suffix(right)
+            break_r = score_r > threshold
+            break_l = score_l > threshold
             if self._split_bias > 0:
-                to_split_l = to_split_l or score_r > self._split_bias_threshold
+                break_l = break_l or score_r > self._split_bias_threshold
 
             if __debug__: log('|{} : {}| score l = {:.4f} r = {:.4f}'
                               ' split l:r = {:1b}:{:1b} prfx = {:1b}'
                               ' th = {:4f} max_s = {:.4f}',
-                              left, right, score_l, score_r, to_split_l,
-                              to_split_r, prefix, threshold, max_score)
+                              left, right, score_l, score_r, break_l,
+                              break_r, prefix, threshold, max_score)
 
-            if not prefix and to_split_l and to_split_r:
+            if prefix:
+                continue
+            if break_l and break_r:
                 if __debug__: log('--> case 1')
                 if (score_l + score_r) > max_score:
                     if __debug__: log('({} + {}) > {}', score_l, score_r, max_score)
                     max_score = score_l + score_r
-                    split = [left, right]
-                    if __debug__: log('case 1 split result: {}', split)
+                    new_split = [left, right]
+                    if __debug__: log('case 1 split result: {}', new_split)
                 else:
                     if __debug__: log('no split for case 1')
-            elif not prefix and to_split_l:
+            elif break_l:
                 if __debug__: log('--> case 2 -- recursive call on "{}"', right)
                 tmp = self._same_case_split(right, score_ns)
                 if tmp[0] != right:
-                    split = [left] + tmp
+                    new_split = [left] + tmp
                     if __debug__: log('case 2 split result: {}', tmp)
                 else:
                     if __debug__: log('no split for case 2')
-            i += 1
-        result = split if split else [s]
+
+        result = new_split if new_split else [s]
         if __debug__: log('<-- returning {}', result)
         return result
 
