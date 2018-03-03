@@ -335,7 +335,8 @@ class Ronin(object):
            than 'length_cutoff' and its frequency value is lower than this,
            then its value will be taken as 0 instead.
 
-         * 'low_freq_cutoff': a cut-off value below which a given frequency
+         * 'low_freq_cutoff': used when scoring strings lacking camel case
+           transitions, this is a cut-off value below which a given frequency
            value in the frequency table is treated as being 0.  This needs to
            have a value greater than 0 to have any effect.  For example, if
            the cutoff is set to 10, any frequency less than or equal to 10
@@ -368,6 +369,7 @@ class Ronin(object):
 
         An optimization utility is included in the Spiral source code
         distribution, to help find parameter values for the above.
+
         '''
         if __debug__: log('init()')
         if not self._frequencies:
