@@ -200,15 +200,40 @@ class Ronin(object):
     # Using the Ludiso oracle/data set as a test set, with the same parameter
     # values, the following is the accuracy:
     #    Ludiso: 2231/2663   (83.78%)
-    # It's possible to optimize against both data sets simultaneously and
-    # gain slightly improved scores that way, but then testing against either
-    # one would not be a reasonable test of accuracy -- it would be more of a
-    # test of recall.  I feel it's more fair to use one for training and the
-    # other for testing.
     #
-    # Other notes: setting camel_bias=0 improves scores on INTT slightly, but
-    # slightly worsens the score for Ludiso and worsens splits on some
-    # inverse camel-case identifiers like "GPSmodule".
+    # Many of the "failures" against these sets of identifiers are actually
+    # not failures, but cases that Ronin clearly gets a more correct answer
+    # or where there is a legitimate difference in interpretation.  Examples:
+    #
+    #   Token       Ludiso             Ronin
+    #   --------    ----------------   -------------
+    #   fread       fread              f, read
+    #   a.ecart_:   a, ecart           a, e, cart
+    #   dtor.token  dtor, token        d, tor, token
+    #   ReadUtf8Z:  Read, Utf, 8, Z    Read, Utf8, Z
+    #
+    # So, Ronin's performance may actually be better than the pure numbers
+    # imply.  However, without going through every Ludiso case and manually
+    # reinterpreting the splits, we can't say for sure whether it really is.
+    # All that aside, it is definitely the case that Ronin gets many cases
+    # wrong.  It is not perfect by any means.
+    #
+    # Other notes:
+    #
+    # * Optimizing against Ludiso instead of INTT leads to a score of
+    #   2248/2663 (84.41%) on Ludiso, but a worse score on INTT, and in general
+    #   I feel that the splits produced with that parameter set are less
+    #   natural on other, unseen inputs.
+    #
+    # * It's possible to optimize against both data sets simultaneously and
+    #   gain slightly improved scores that way, but then testing against
+    #   either one would not be a reasonable test of accuracy -- it would be
+    #   more of a test of recall.  I feel it's more fair to use one for
+    #   training and the other for testing.
+    #
+    # * Setting camel_bias=0 improves scores on INTT slightly, but slightly
+    #   worsens the score for Ludiso and worsens splits on some inverse
+    #   camel-case identifiers like "GPSmodule".
     #
     def init(self, frequencies=None, exact_case=False, low_freq_cutoff=339,
              length_cutoff=2, min_short_string_freq=273000,
