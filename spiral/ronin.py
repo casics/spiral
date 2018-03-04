@@ -130,6 +130,7 @@ Software Inventory Creation System.  For more, visit http://casics.org.
 
 '''
 
+import bisect
 import math
 import os
 import re
@@ -267,10 +268,10 @@ class Ronin(object):
 
     # The default parameter values came from optimizing against the INTT data
     # set/oracle, then doing some hand tweaking.  The final score for INTT was:
-    #    INTT:   17303/18772 (92.17%)
+    #    INTT:   17302/18772 (92.17%)
     # Using the Ludiso oracle/data set as a test set, with the same parameter
     # values, the following is the accuracy:
-    #    Ludiso: 2219/2663   (83.33%)
+    #    Ludiso: 2222/2663   (83.44%)
     # It's possible to optimize against both data sets simultaneously and
     # gain slightly improved scores that way, but then testing against either
     # one would not be a reasonable test of accuracy -- it would be more of a
@@ -281,10 +282,10 @@ class Ronin(object):
     # slightly worsens the score for Ludiso and worsens splits on some
     # inverse camel-case identifiers like "GPSmodule".
     #
-    def init(self, frequencies=None, exact_case=False, low_freq_cutoff=350,
-             length_cutoff=2, min_short_string_freq=270000,
-             normal_exponent=0.179, dict_word_exponent=0.1293,
-             camel_bias=1, split_bias=0.000001):
+    def init(self, frequencies=None, exact_case=False, low_freq_cutoff=338,
+             length_cutoff=2, min_short_string_freq=362000,
+             normal_exponent=0.1348, dict_word_exponent=0.0840,
+             camel_bias=1, split_bias=0.00000052):
         '''Initialize internal frequency files for the Ronin split() function.
         Note: the first time this function is called, it will take noticeable
         time because it will load a global frequency table (unless one is
@@ -493,7 +494,7 @@ class Ronin(object):
         if __debug__: log('initial split = {}', initial_list)
         for s in initial_list:
             if __debug__: log('considering {}', s)
-            if self._is_recognized(s):
+            if self._recognized(s):
                 if __debug__: log('{} is a recognized token; using it as-is', s)
                 splits = splits + [s]
                 continue
@@ -537,8 +538,8 @@ class Ronin(object):
         return results
 
 
-    def _same_case_split(self, s, score_ns=.0000005):
-        if self._is_recognized(s):
+    def _same_case_split(self, s, score_ns = .0000005, recursed = False):
+        if self._recognized(s):
             if __debug__: log('{} is recognized; using it as-is', s)
             return [s]
         new_split = None
@@ -546,6 +547,7 @@ class Ronin(object):
         max_index = len(s) - 1
         threshold = max(self._adjusted_score(s), score_ns)
         if __debug__: log('_same_case_split on {}, threshold {}', s, threshold)
+        other_splits = []
         i = 0
         while i < max_index:
             i += 1
@@ -557,7 +559,8 @@ class Ronin(object):
             break_r = score_r > threshold
             break_l = score_l > threshold
             if self._split_bias > 0:
-                break_l = break_l or score_r > self._split_bias_threshold
+                break_l = break_l or (len(left) <= self._length_cutoff
+                                      and score_r > self._split_bias_threshold)
 
             if __debug__: log('|{} : {}| score l = {:.4f} r = {:.4f}'
                               ' split l:r = {:1b}:{:1b} prfx = {:1b}'
@@ -578,14 +581,27 @@ class Ronin(object):
                     if __debug__: log('no split for case 1')
             elif break_l:
                 if __debug__: log('--> case 2 -- recursive call on "{}"', right)
-                tmp = self._same_case_split(right, score_ns)
+                tmp = self._same_case_split(right, score_ns, recursed = True)
                 if tmp[0] != right:
                     new_split = [left] + tmp
                     if __debug__: log('case 2 split result: {}', tmp)
                 else:
                     if __debug__: log('no split for case 2')
+            elif (break_r and not new_split and self._recognized(right)
+                  and (len(left) <= self._length_cutoff or self._recognized(left))):
+                # Case where the left side doesn't exceed the threshold but the
+                # right side is a recognized term.
+                if __debug__: log('--> case 3 -- recognized "{}"', right)
+                bisect.insort(other_splits, (score_r, [left, right]))
 
-        result = new_split if new_split else [s]
+        if new_split:
+            result = new_split
+        elif other_splits:
+            # We didn't find a split using our primary approach, but we have
+            # potential alternative splits.  Pick the highest-scored one.
+            result = other_splits[-1][1]
+        else:
+            result = [s]
         if __debug__: log('<-- returning {}', result)
         return result
 
@@ -612,13 +628,13 @@ class Ronin(object):
 
     def _rescale(self, token, score_value):
         '''Rescale the given token score value.'''
-        if self._is_recognized(token):
+        if self._recognized(token):
             return math.pow(score_value, self._dict_word_exponent)
         else:
             return math.pow(score_value, self._normal_exponent)
 
 
-    def _is_recognized(self, token):
+    def _recognized(self, token):
         tlower = token.lower()
         return (tlower in common_terms_with_numbers
                 or tlower in special_computing_terms
