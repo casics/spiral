@@ -131,17 +131,33 @@ def find_parameters(vars):
 # .............................................................................
 
 @plac.annotations(
-    threads   = ('number of threads to use',                'option', 't'),
-    runs      = ('number of runs to do',                    'option', 'r'),
     optimizer = ('Platypus algorithm to use',               'option', 'a'),
+    runs      = ('number of runs to do',                    'option', 'r'),
+    threads   = ('number of threads to use',                'option', 't'),
     seed      = ('set the random seed explicitly',          'option', 'S'),
     inputs    = 'files of test cases',
 )
 
-def main(optimizer='NSGAII', threads=6, runs=15000, seed=None, *inputs):
+def main(optimizer='IBEA', threads=6, runs=15000, seed=None, *inputs):
     '''Files of test cases should be files in TSV format.  The file name can
 end in the suffix ':lower' to indicate that the strings produced by splitting
 should be lower-cased before the results are compared to the expected values.
+
+Known names of optimization algorithms for use with the -a argument:
+  CMAES
+  EpsMOA
+  GDE3
+  IBEA
+  MOEAD
+  NSGAII
+  NSGAIII
+  OMOPSO
+  SMPSO
+  SPEA2
+
+NSGAIII is supposed to be one of the best, but I've gotten better parameter
+values from IBEA.  See the following page for the list of Platypus optimizers:
+http://platypus.readthedocs.io/en/latest/experimenter.html
 '''
     global tests
     global lowest
