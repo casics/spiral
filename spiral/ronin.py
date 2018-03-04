@@ -587,7 +587,7 @@ class Ronin(object):
                     if __debug__: log('case 2 split result: {}', tmp)
                 else:
                     if __debug__: log('no split for case 2')
-            elif (break_r and not new_split and self._recognized(right)
+            elif (break_r and not recursed and not new_split and self._recognized(right)
                   and (len(left) <= self._length_cutoff or self._recognized(left))):
                 # Case where the left side doesn't exceed the threshold but the
                 # right side is a recognized term.
