@@ -268,10 +268,10 @@ class Ronin(object):
 
     # The default parameter values came from optimizing against the INTT data
     # set/oracle, then doing some hand tweaking.  The final score for INTT was:
-    #    INTT:   17302/18772 (92.17%)
+    #    INTT:   17387/18772 (92.62%)
     # Using the Ludiso oracle/data set as a test set, with the same parameter
     # values, the following is the accuracy:
-    #    Ludiso: 2222/2663   (83.44%)
+    #    Ludiso: 2231/2663   (83.78%)
     # It's possible to optimize against both data sets simultaneously and
     # gain slightly improved scores that way, but then testing against either
     # one would not be a reasonable test of accuracy -- it would be more of a
@@ -282,10 +282,10 @@ class Ronin(object):
     # slightly worsens the score for Ludiso and worsens splits on some
     # inverse camel-case identifiers like "GPSmodule".
     #
-    def init(self, frequencies=None, exact_case=False, low_freq_cutoff=338,
-             length_cutoff=2, min_short_string_freq=362000,
-             normal_exponent=0.1348, dict_word_exponent=0.0840,
-             camel_bias=1, split_bias=0.00000052):
+    def init(self, frequencies=None, exact_case=False, low_freq_cutoff=339,
+             length_cutoff=2, min_short_string_freq=273000,
+             normal_exponent=0.3147, dict_word_exponent=0.1918,
+             camel_bias=1, split_bias=0.000005):
         '''Initialize internal frequency files for the Ronin split() function.
         Note: the first time this function is called, it will take noticeable
         time because it will load a global frequency table (unless one is
