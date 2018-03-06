@@ -195,11 +195,12 @@ class Ronin(object):
     _exact_case           = False
 
     # The default parameter values came from optimizing against the INTT data
-    # set/oracle, then doing some hand tweaking.  The final score for INTT was:
-    #    INTT:   17387/18772 (92.62%)
+    # set/oracle, then doing some hand-tweaking of the parameter values.
+    # The final score for INTT was:
+    #    INTT:   17388/18772 (92.63%)
     # Using the Ludiso oracle/data set as a test set, with the same parameter
     # values, the following is the accuracy:
-    #    Ludiso: 2231/2663   (83.78%)
+    #    Ludiso: 2232/2663   (83.82%)
     #
     # Many of the "failures" against these sets of identifiers are actually
     # not failures, but cases that Ronin clearly gets a more correct answer
@@ -220,7 +221,7 @@ class Ronin(object):
     #
     # Other notes:
     #
-    # * Optimizing against Ludiso instead of INTT leads to a score of
+    # * Optimizing directly against Ludiso instead of INTT leads to a score of
     #   2248/2663 (84.41%) on Ludiso, but a worse score on INTT, and in general
     #   I feel that the splits produced with that parameter set are less
     #   natural on other, unseen inputs.
@@ -236,9 +237,9 @@ class Ronin(object):
     #   camel-case identifiers like "GPSmodule".
     #
     def init(self, frequencies=None, exact_case=False, low_freq_cutoff=339,
-             length_cutoff=2, min_short_string_freq=273000,
-             normal_exponent=0.3147, dict_word_exponent=0.1918,
-             camel_bias=1, split_bias=0.000005):
+             length_cutoff=2, min_short_string_freq=283000,
+             normal_exponent=0.307, dict_word_exponent=0.188,
+             camel_bias=9.487, split_bias=0.0000045):
         '''Initialize internal frequency files for the Ronin split() function.
         Note: the first time this function is called, it will take noticeable
         time because it will load a global frequency table (unless one is
@@ -323,7 +324,6 @@ class Ronin(object):
 
         An optimization utility is included in the Spiral source code
         distribution, to help find parameter values for the above.
-
         '''
         if __debug__: log('init()')
         if not self._frequencies:
