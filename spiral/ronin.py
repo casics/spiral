@@ -210,14 +210,16 @@ class Ronin(object):
     #   --------    ----------------   -------------
     #   fread       fread              f, read
     #   a.ecart_:   a, ecart           a, e, cart
-    #   dtor.token  dtor, token        d, tor, token
     #   ReadUtf8Z:  Read, Utf, 8, Z    Read, Utf8, Z
     #
-    # So, Ronin's performance may actually be better than the pure numbers
-    # imply.  However, without going through every Ludiso case and manually
-    # reinterpreting the splits, we can't say for sure whether it really is.
-    # All that aside, it is definitely the case that Ronin gets many cases
-    # wrong.  It is not perfect by any means.
+    # Names like 'fread' could be considered appropriate to leave alone, but
+    # in truth 'fread' stands for 'file read' and thus IMHO it makes sense to
+    # split it -- splitting identifiers into meaningful tokens is the purpose
+    # of Ronin, after all.  So, Ronin's performance may actually be better
+    # than the pure numbers imply.  However, without going through every
+    # Ludiso case and manually reinterpreting the splits, we can't say for
+    # sure whether it really is.  All that aside, it is definitely the case
+    # that Ronin gets many cases wrong.  It is not perfect by any means.
     #
     # Other notes:
     #
