@@ -13,7 +13,12 @@ import sys
 from   time import time
 
 thisdir = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(thisdir, '..'))
+try:
+    sys.path.append(os.path.join(thisdir, ".."))
+    sys.path.append(os.path.join(thisdir, "../.."))
+except:
+    sys.path.append("..")
+    sys.path.append("../..")
 
 cases = {}
 
