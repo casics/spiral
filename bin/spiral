@@ -69,11 +69,10 @@ and exit without doing anything more.
 '''
     # Process arguments
     if version:
-        print('{} version {}'.format(spiral.__version__.__title__,
-                                     spiral.__version__.__version__))
-        print('Author: {}'.format(spiral.__version__.__author__))
-        print('URL: {}'.format(spiral.__version__.__url__))
-        print('License: {}'.format(spiral.__version__.__license__))
+        print('{} version {}'.format(spiral.__title__, spiral.__version__))
+        print('Author: {}'.format(spiral.__author__))
+        print('URL: {}'.format(spiral.__url__))
+        print('License: {}'.format(spiral.__license__))
         sys.exit()
 
     if list:

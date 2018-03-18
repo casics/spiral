@@ -6,7 +6,9 @@
 # @website https://github.com/casics/spiral
 # =============================================================================
 
-from .__version__ import *
+from .__version__ import __version__, __title__, __description__, __url__
+from .__version__ import __author__, __email__
+from .__version__ import __license__, __copyright__
 
 # Supporting modules.
 from .frequencies import frequencies_from_csv_file, frequencies_from_pickle
