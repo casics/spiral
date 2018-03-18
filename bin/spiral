@@ -80,7 +80,7 @@ and exit without doing anything more.
         for name, _ in sorted(_available_splitters.items()):
             print('  ' + name)
         sys.exit()
-    if splitter and not splitter in _available_splitters:
+    if splitter and splitter not in _available_splitters:
         raise SystemExit('Unrecognized splitter: "{}"'.format(splitter))
     if not file and not strings:
         raise SystemExit('Need a file or string as input argument')
@@ -99,8 +99,7 @@ and exit without doing anything more.
 
 
 def split(string_list, splitter_functions):
-    init = splitter_functions[0]
-    split = splitter_functions[1]
+    init, split = splitter_functions
     if init:
         print('Initializing ...')
         init()
