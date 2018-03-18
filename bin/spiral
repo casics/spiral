@@ -59,12 +59,12 @@ this startup delay is only a one-time cost and not typical for normal Spiral
 usage.
 
 The input to this program can be one or more strings on the command line,
-or (using the `-f` argument) a file of strings.  If given a file of
+or (using the -f argument) a file of strings.  If given a file of
 strings, it will analyze each line in the file separately.
 
-The splitter to be used can be specified using the `-s` option.
+The splitter to be used can be specified using the -s option.
 
-The optional argument `-v` will make this program display version information
+The optional argument -v will make this program display version information
 and exit without doing anything more.
 '''
     # Process arguments
