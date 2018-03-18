@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # =============================================================================
-# @file    convert_intt_oracle.py
+# @file    convert_intt_oracle
 # @brief   Take the INTT test files and create a create a single TSV file
 # @author  Michael Hucka
 # @license Please see the file named LICENSE in the project directory
