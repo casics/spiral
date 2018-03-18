@@ -132,6 +132,7 @@ Software Inventory Creation System.  For more, visit http://casics.org.
 
 import bisect
 import math
+from   nltk.stem import SnowballStemmer
 import os
 import re
 import sys
@@ -168,12 +169,18 @@ except:
 # The file needs to be kept in the same directory as this Python module file.
 
 try:
-    _DEFAULT_FREQ_DIR = os.path.dirname(__file__)
+    _DATA_DIR = os.path.join(os.path.dirname(__file__), 'data')
 except:
-    _DEFAULT_FREQ_DIR = os.path.dirname('.')
-_DEFAULT_FREQ_PICKLE = os.path.join(_DEFAULT_FREQ_DIR, 'data/frequencies.pklz')
+    _DATA_DIR = os.path.dirname('./data')
+
+_DEFAULT_FREQ_PICKLE = os.path.join(_DATA_DIR, 'frequencies.pklz')
 '''Pickle file storing the default global frequency table shipped with this
 module.  This constant is only read by ronin.init(...).'''
+
+_DICTIONARY_PICKLE = os.path.join(_DATA_DIR, 'dictionary.pklz')
+'''Pickle file storing the dictionary used by Ronin.  See the code in
+init() for the exact contents, but to summarize, it's comprised of some NLTK
+dictionaries and the special_computing_terms set from constants.py'''
 
 
 # Main class
@@ -359,17 +366,22 @@ class Ronin(object):
         self._dict_word_exponent = dict_word_exponent
         self._camel_bias = camel_bias
         if not self._dictionary:
-            if __debug__: log('  initializing dictionary and stemmer')
-            from nltk.corpus import words as nltk_words
-            from nltk.corpus import wordnet as nltk_wordnet
-            from nltk.stem import SnowballStemmer
-            # Note: I also tried adding the words from /usr/share/dict/web,
-            # but the only additional words it had that were not already in
-            # the next two dicts were people's proper names. Not useful.
-            self._dictionary = set(nltk_words.words())
-            self._dictionary.update(nltk_wordnet.all_lemma_names())
-            self._dictionary.update(special_computing_terms)
-            self._stemmer = SnowballStemmer('english')
+            if os.path.exists(_DICTIONARY_PICKLE):
+                if __debug__: log('  loading pickled dictionary')
+                import gzip, pickle
+                with gzip.open(_DICTIONARY_PICKLE, 'rb') as pickle_file:
+                    self._dictionary = pickle.load(pickle_file)
+            else:
+                if __debug__: log('  initializing dictionary and stemmer')
+                from nltk.corpus import words as nltk_words
+                from nltk.corpus import wordnet as nltk_wordnet
+                # Note: I also tried adding the words from /usr/share/dict/web,
+                # but the only additional words it had that were not already in
+                # the next two dicts were people's proper names. Not useful.
+                self._dictionary = set(nltk_words.words())
+                self._dictionary.update(nltk_wordnet.all_lemma_names())
+                self._dictionary.update(special_computing_terms)
+        self._stemmer = SnowballStemmer('english')
         # Generate scoring function based on exact case flag.  Do it here so
         # we don't have to keep testing the variable at run-time.
         if exact_case:
