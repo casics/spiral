@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 # This is just a quick test script I used to evaluate some hand-picked cases.
 # Ronin does not get them all correct.  With the default frequency table and
-# parameter values, it fails 15 cases.
+# parameter values, it fails 11 cases.
 
 import os
 import sys
 
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+    sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 except:
     sys.path.append("..")
+    sys.path.append("../..")
 
 from spiral import ronin
 
