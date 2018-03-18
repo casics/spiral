@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # =============================================================================
-# @file    show-simple.py
+# @file    show-simple
 # @brief   Show differences in behaviors of the simple splitters
 # @author  Michael Hucka <mhucka@caltech.edu>
 # @license Please see the file named LICENSE in the project directory
