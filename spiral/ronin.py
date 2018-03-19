@@ -337,7 +337,7 @@ class Ronin(object):
         if __debug__: log('init()')
         if not self._frequencies:
             if not frequencies:
-                if __debug__: log('  loading frequency pickle {}'
+                if __debug__: log('... loading frequency pickle {}'
                                   .format(_DEFAULT_FREQ_PICKLE))
                 if os.path.exists(_DEFAULT_FREQ_PICKLE):
                     frequencies = frequencies_from_pickle(_DEFAULT_FREQ_PICKLE)
@@ -367,12 +367,13 @@ class Ronin(object):
         self._camel_bias = camel_bias
         if not self._dictionary:
             if os.path.exists(_DICTIONARY_PICKLE):
-                if __debug__: log('  loading pickled dictionary')
+                if __debug__: log('... loading pickled dictionary {}'
+                                  .format(_DICTIONARY_PICKLE))
                 import gzip, pickle
                 with gzip.open(_DICTIONARY_PICKLE, 'rb') as pickle_file:
                     self._dictionary = pickle.load(pickle_file)
             else:
-                if __debug__: log('  initializing dictionary and stemmer')
+                if __debug__: log('... initializing dictionary and stemmer')
                 from nltk.corpus import words as nltk_words
                 from nltk.corpus import wordnet as nltk_wordnet
                 # Note: I also tried adding the words from /usr/share/dict/web,
@@ -407,17 +408,17 @@ class Ronin(object):
                 return 0
         self._score = score_function
         if __debug__:
-            log('  frequency table has {} entries', len(self._frequencies))
-            log('  highest frequency = {}', self._highest_freq)
-            log('  dictionary has {} entries', len(self._dictionary))
-            log('  split bias threshold = {}', self._split_bias_threshold)
-            log('  low frequency cutoff = {}', self._low_freq_cutoff)
-            log('  length cutoff = {}', self._length_cutoff)
-            log('  minimum short string frequency = {}', self._min_short_freq)
-            log('  normal exponent = {}', self._normal_exponent)
-            log('  dictionary word exponent = {}', self._dict_word_exponent)
-            log('  camel bias = {}', self._camel_bias)
-            log('  exact_case = {}', self._exact_case)
+            log('... frequency table has {} entries', len(self._frequencies))
+            log('... highest frequency = {}', self._highest_freq)
+            log('... dictionary has {} entries', len(self._dictionary))
+            log('... split bias threshold = {}', self._split_bias_threshold)
+            log('... low frequency cutoff = {}', self._low_freq_cutoff)
+            log('... length cutoff = {}', self._length_cutoff)
+            log('... minimum short string frequency = {}', self._min_short_freq)
+            log('... normal exponent = {}', self._normal_exponent)
+            log('... dictionary word exponent = {}', self._dict_word_exponent)
+            log('... camel bias = {}', self._camel_bias)
+            log('... exact_case = {}', self._exact_case)
 
 
     def split(self, identifier, keep_numbers=True):
@@ -460,9 +461,9 @@ class Ronin(object):
         initial_list = heuristic_split(identifier, keep_numbers=keep_numbers)
         if __debug__: log('initial split = {}', initial_list)
         for s in initial_list:
-            if __debug__: log('considering {}', s)
+            if __debug__: log('considering "{}"', s)
             if self._recognized(s):
-                if __debug__: log('{} is a recognized token; using it as-is', s)
+                if __debug__: log('"{}" is a recognized token; using it as-is', s)
                 splits = splits + [s]
                 continue
             # Look for upper-to-lower case transitions.
@@ -475,7 +476,7 @@ class Ronin(object):
                 if __debug__: log('case transition: {}{}', s[i], s[i+1])
                 camel = s[i:] if i > 0 else s
                 camel_score = self._score(camel)
-                if __debug__: log('{} score = {}', camel, camel_score)
+                if __debug__: log('"{}" score = {}', camel, camel_score)
                 alt = s[i+1:]
                 # Logically, this next comparison should use the raw_score
                 # rather than the adjusted or rescaled score.  Yet doing that
@@ -486,17 +487,16 @@ class Ronin(object):
                 # the optimization results are clear and consistent.
                 alt_score = self._adjusted_score(alt) * self._camel_bias
                 if camel_score >= alt_score:
-                    if __debug__: log('{} >= {} ==> include uppercase letter',
+                    if __debug__: log('"{}" >= {} ==> include uppercase letter',
                                       camel_score, alt_score)
                     parts = [s[0:i], s[i:]] if i > 0 else [s]
                 else:
-                    if __debug__: log("{} < {} ==> don't include uppercase letter",
+                    if __debug__: log("\"{}\" < {} ==> don't include uppercase letter",
                                       camel_score, alt_score)
                     parts = [s[0:i+1], s[i+1:]]
                 if __debug__: log('split outcome: {}', parts)
             splits = splits + parts
 
-        if __debug__: log('turning over to _same_case_split: {}', splits)
         results = []
         for token in splits:
             token_score = self._adjusted_score(token)
@@ -505,15 +505,16 @@ class Ronin(object):
         return results
 
 
-    def _same_case_split(self, s, score_ns = .0000005, recursed = False):
+    def _same_case_split(self, s, score_ns = .0000005, level = 0):
+        if __debug__: ind = ' '*(3*level)
+        if __debug__: log('{}same_case_split "{}"', ind, s)
         if self._recognized(s):
-            if __debug__: log('{} is recognized; using it as-is', s)
+            if __debug__: log('{}recognized "{}" -- returning as-is', ind, s)
             return [s]
         new_split = None
         max_score = -1
         max_index = len(s) - 1
         threshold = max(self._adjusted_score(s), score_ns)
-        if __debug__: log('_same_case_split on {}, threshold {}', s, threshold)
         other_splits = []
         i = 0
         while i < max_index:
@@ -529,36 +530,36 @@ class Ronin(object):
                 break_l = break_l or (len(left) <= self._length_cutoff
                                       and score_r > self._split_bias_threshold)
 
-            if __debug__: log('|{} : {}| score l = {:.4f} r = {:.4f}'
-                              ' split l:r = {:1b}:{:1b} prfx = {:1b}'
-                              ' th = {:4f} max_s = {:.4f}',
-                              left, right, score_l, score_r, break_l,
-                              break_r, prefix, threshold, max_score)
+            if __debug__: log('{}|{} : {}| score l = {:.3f} r = {:.3f}'
+                               ' split l:r = {:1b}:{:1b} prfx = {:1b}'
+                               ' th = {:.3f} max_s = {:.3f}',
+                               ind, left, right, score_l, score_r, break_l,
+                               break_r, prefix, threshold, max_score)
 
             if prefix:
                 continue
             if break_l and break_r:
-                if __debug__: log('--> case 1')
+                if __debug__: log('{}case 1 -- both sides', ind)
                 if (score_l + score_r) > max_score:
                     if __debug__: log('({} + {}) > {}', score_l, score_r, max_score)
                     max_score = score_l + score_r
                     new_split = [left, right]
-                    if __debug__: log('case 1 split result: {}', new_split)
+                    if __debug__: log('{}case 1 split result: {}', ind, new_split)
                 else:
-                    if __debug__: log('no split for case 1')
+                    if __debug__: log('{}no split for case 1', ind)
             elif break_l:
-                if __debug__: log('--> case 2 -- recursive call on "{}"', right)
-                tmp = self._same_case_split(right, score_ns, recursed = True)
+                if __debug__: log('{}case 2 -- recursive call on "{}"', ind, right)
+                tmp = self._same_case_split(right, score_ns, level = level + 1)
                 if tmp[0] != right:
                     new_split = [left] + tmp
-                    if __debug__: log('case 2 split result: {}', tmp)
+                    if __debug__: log('{}case 2 split result: {}', ind, tmp)
                 else:
-                    if __debug__: log('no split for case 2')
-            elif (break_r and not recursed and not new_split and self._recognized(right)
+                    if __debug__: log('{}no split for case 2', ind)
+            elif (break_r and not level and not new_split and self._recognized(right)
                   and (len(left) <= self._length_cutoff or self._recognized(left))):
                 # Case where the left side doesn't exceed the threshold but the
                 # right side is a recognized term.
-                if __debug__: log('--> case 3 -- recognized "{}"', right)
+                if __debug__: log('{}-> case 3 -- recognized "{}"', ind, right)
                 bisect.insort(other_splits, (score_r, [left, right]))
 
         if new_split:
@@ -569,7 +570,7 @@ class Ronin(object):
             result = other_splits[-1][1]
         else:
             result = [s]
-        if __debug__: log('<-- returning {}', result)
+        if __debug__: log('{}returning {}', ind, result)
         return result
 
 
