@@ -5,8 +5,10 @@ import sys
 
 try:
     sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+    sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 except:
     sys.path.append("..")
+    sys.path.append("../..")
 
 from spiral import ronin
 
@@ -73,6 +75,18 @@ cases = {
     'uval': ['u', 'val'],
     'readcmd': ['read', 'cmd'],
     'nonnegativedecimaltype': ['nonnegative', 'decimal', 'type'],
+    'filesaveas': ['file', 'save', 'as'],
+    'wickedweather': ['wicked', 'weather'],
+    'liquidweather': ['liquid', 'weather'],
+    'driveourtrucks': ['drive', 'our', 'trucks'],
+    'gocompact': ['go', 'compact'],
+    'slimprojector': ['slim', 'projector'],
+    'farsidebag' : ['far', 'side', 'bag'],
+    'urlparser': ['url', 'parser'],
+    'altscore': ['alt', 'score'],
+    'rescale': ['rescale'],
+    'csize': ['c', 'size'],
+    'xmax': ['x', 'max'],
 }
 
 successes = 0
