@@ -343,6 +343,7 @@ special_computing_terms = {
     'checkbox',
     'classpath',
     'copyleft',
+    'crosshair',
     'dataflow',
     'datastore',
     'deadlock',
@@ -372,6 +373,8 @@ special_computing_terms = {
     'hostname',
     'hyperscale',
     'inode',
+    'intel',
+    'intra',
     'icq',
     'io',
     'iscsi',
@@ -395,6 +398,7 @@ special_computing_terms = {
     'middleware',
     'millis',
     'mmx',
+    'mpegts',
     'multipass',
     'multitasking',
     'msata',
@@ -448,13 +452,15 @@ them; for example, "checkbox" would in normal English be considered two
 words, but has come to be accepted as a common neologism in computing.
 '''
 
-# The following list of prefixes and suffixes came from the web page for
-# Samurai, https://hiper.cis.udel.edu/Samurai/Samurai.html
+# The following list of prefixes and suffixes started as the lists from the
+# web page for Samurai, https://hiper.cis.udel.edu/Samurai/Samurai.html
 #
 # Enslen, E., Hill, E., Pollock, L., & Vijay-Shanker, K. (2009).
 # Mining source code to automatically split identifiers for software analysis.
 # In Proceedings of the 6th IEEE International Working Conference on Mining
 # Software Repositories (MSR'09) (pp. 71-80).
+#
+# I made additions to the prefixes.
 
 prefixes = {'afro', 'ambi', 'amphi', 'ana', 'anglo', 'apo', 'astro', 'bi',
             'bio', 'circum', 'cis', 'co', 'col', 'com', 'con', 'contra',
@@ -467,7 +473,7 @@ prefixes = {'afro', 'ambi', 'amphi', 'ana', 'anglo', 'apo', 'astro', 'bi',
             'paleo', 'para', 'ped', 'peri', 'poly', 'pre', 'preter',
             'proto', 'pyro', 're', 'retro', 'semi', 'socio', 'supra',
             'sur', 'sy', 'syl', 'sym', 'syn', 'tele', 'trans', 'tri',
-            'twi', 'ultra', 'un', 'uni'}
+            'twi', 'ultra', 'un', 'uni', 'non', 'pre', 'over'}
 
 suffixes = {'a', 'ac', 'acea', 'aceae', 'acean', 'aceous', 'ade', 'aemia',
             'agogue', 'aholic', 'al', 'ales', 'algia', 'amine', 'ana',
