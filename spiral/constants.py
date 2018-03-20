@@ -473,7 +473,7 @@ prefixes = {'afro', 'ambi', 'amphi', 'ana', 'anglo', 'apo', 'astro', 'bi',
             'paleo', 'para', 'ped', 'peri', 'poly', 'pre', 'preter',
             'proto', 'pyro', 're', 'retro', 'semi', 'socio', 'supra',
             'sur', 'sy', 'syl', 'sym', 'syn', 'tele', 'trans', 'tri',
-            'twi', 'ultra', 'un', 'uni', 'non', 'pre', 'over'}
+            'twi', 'ultra', 'un', 'uni', 'non'}
 
 suffixes = {'a', 'ac', 'acea', 'aceae', 'acean', 'aceous', 'ade', 'aemia',
             'agogue', 'aholic', 'al', 'ales', 'algia', 'amine', 'ana',
