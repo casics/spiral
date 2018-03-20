@@ -141,7 +141,17 @@ exceptions = {'ipython', 'caching', 'revoked', 'doxygen', 'cpython',
               'mysqldb', 'mysql', 'bsddb', 'innodb', 'couchdb' 'zodb',
               'pydb', 'uuid', 'uid', 'bio', 'mercurio', 'stdio', 'stderr',
               'stdout', 'settings', 'sets', 'setup', 'setups', 'unicode',
-              'cached', 'codecs', 'ident', 'coords', 'iscsi', 'dirichlet'}
+              'cached', 'codecs', 'ident', 'coords', 'iscsi', 'dirichlet',
+              'json', 'util', 'async', 'init', 'gzip', 'cron', 'cuda', 'mbox',
+              'todo', 'eval', 'dest', 'proc', 'lang', 'xcode', 'kivy', 'x509',
+              'ckan', 'imap', 'frag', 'numa', 'chan', 'anim', 'zope', 'cmake',
+              'rsync', 'jpeg', 'plone', 'mgmt', 'dwim', 'i386', 'sftp', 'tftp',
+              'fasta', 'wget', 'priv', 'bson', 'bokeh', 'excl', 'gmail',
+              'inode', 'ebay', 'tahoe', 'xray', 'xbox', 's390', 'foaf', 'i486',
+              'xfer', 'nmake', 'tmux', 'vram', 'sdram', 'haxe', 'iana', 'inet',
+              'i686', 'eula', 'emph', 'sata', 'pata', 'uber', 'ipad', 'cdash',
+              'uboot', 'acosh', 'asech', 'atanh', 'jira', 'vmware', 'iweb',
+              'msec', 'usec', 'xref', 'toc'}
 
 def filter(s):
     '''Return True if the token should be filtered out.'''
@@ -180,6 +190,10 @@ def filter(s):
     # are tokens we do want in the frequency table, so the rules below are
     # very limited.  Note: don't remove things only because they have a
     # number at the end.  Example: lib2to3 should be left in.
+    if len(s) > 3 and len(s) < 7 and not in_dictionary(s):
+        if in_dictionary(s[1:]) and not s.startswith('pre') and s[-1] not in ['s']:
+            msg('dropping {}', s)
+            return True
     if len(s) > 5 and not in_dictionary(s):
         if in_dictionary(s[1:]) and not s.startswith('pre'):
             msg('dropping {}', s)
@@ -195,6 +209,11 @@ def filter(s):
         return True
 
     if multiple_words_ending_with(s, common_ends):
+        msg('dropping {}', s)
+        return True
+
+    # Remove what are recognized as two or more common words concatenated.
+    if len(s) > 7 and multiple_words(s):
         msg('dropping {}', s)
         return True
 
@@ -216,6 +235,20 @@ def multiple_words_starting_with(s, starts_list):
         minlength = len(start) + 2
         if (not in_dictionary(s) and s.startswith(start) and len(s) >= minlength):
             return True
+    return False
+
+
+def multiple_words(s):
+    if len(s) < 7:
+        return False
+    if in_dictionary(s):
+        return False
+    for i in range(3, len(s) - 3):
+        if s[i:] in nltk_dictionary:
+            if s[:i] in nltk_dictionary:
+                return True
+            elif multiple_words(s[:i]):
+                return True
     return False
 
 
