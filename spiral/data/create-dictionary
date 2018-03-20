@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+import sys
+import gzip, pickle
+from nltk.corpus import words as nltk_words
+from nltk.corpus import wordnet as nltk_wordnet
+
+try:
+    sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+except:
+    sys.path.append("..")
+
+try:
+    from .constants import *
+except:
+    from constants import *
+
+# Note: I also tried adding the words from /usr/share/dict/web,
+# but the only additional words it had that were not already in
+# the next two dicts were people's proper names. Not useful.
+dictionary = set(nltk_words.words())
+dictionary.update(nltk_wordnet.all_lemma_names())
+dictionary.update(special_computing_terms)
+
+with gzip.open('dictionary.pklz', 'wb') as pickle_file:
+    pickle.dump(dictionary, pickle_file)
+
+print('Done.')
+
+
+# For Emacs users
+# ......................................................................
+# Local Variables:
+# mode: python
+# python-indent-offset: 4
+# End:
