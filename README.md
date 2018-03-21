@@ -101,7 +101,7 @@ Here are the splitters implemented in Spiral at this time:
 | Samurai                | frequency-based algorithm published in the literature                                                                   |
 | Ronin                  | complex frequency-based algorithm originally based on Samurai but greatly extended                                      |
 
-The following table illustrates the behavior of the simpler splitters.  The behavior of Ronin is discussed in the next section.
+The following table illustrates the behavior of the simpler splitters.
 
 | Input string   | pure camel  | safe simple| simple      | elementary   | heuristic  |
 |----------------|-------------|------------|-------------|--------------|------------|
@@ -143,6 +143,7 @@ The following table illustrates the behavior of the simpler splitters.  The beha
 | `J2SE4me`      | `J2SE4me`  | `J2SE4me`  | `J2SE4me`  | `J` `2` `SE` `4` `me`  | `J2SE` `4` `me` |
 | `IPv4addr`     | `IPv4addr`  | `IPv4addr`  | `IPv4addr`  | `IPv` `4` `addr`  | `IPv4` `addr` |
 
+Ronin is more advanced than any of the simple splitters above.  It does everything `heuristic_splitter` does, but handles far more difficult cases. Its behavior is discussed in the next section.
 
 🎯 Performance
 --------------
@@ -156,7 +157,7 @@ Ronin is an advanced splitter that uses a variety of heuristic rules, English di
 
 Spiral includes copies of these data sets in the [tests/data](tests/data) subdirectory.  The parameters derived primarily by running against the INTT database of 18,772 identifiers and their splits.  The following table summarizes the results:
 
-| Data set                          | Splits matched by Ronin | Total in data set | Accuracy |
+| Data set                          | Number of splits matched by Ronin | Total in data set | Accuracy |
 |-----------------------------------|------------------------:|---------------:|----------:|
 | [INTT](tests/data/intt.tsv)       |                 17,287   | 18,772          | 92.09%   |
 | [Ludiso](tests/data/ludiso.tsv)   |                 2,248    | 2,663           | 84.42%   |
