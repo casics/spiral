@@ -19,17 +19,19 @@ with open(os.path.join(here, 'requirements.txt')) as f:
     reqs = f.read().rstrip().splitlines()
 
 setup(
-    name=spiral.__version__.__title__.lower(),
-    description=spiral.__version__.__description__,
+    name=spiral.__title__.lower(),
+    description=spiral.__description__,
     long_description='Spiral (SPlitters for IdentifieRs: A Library) provides methods for splitting and expanding identifiers found in source code files.',
     keywords="program-analysis text-processing machine-learning",
-    version=spiral.__version__.__version__,
-    url=spiral.__version__.__url__,
-    author=spiral.__version__.__author__,
-    author_email=spiral.__version__.__email__,
-    license=spiral.__version__.__license__,
+    version=spiral.__version__,
+    url=spiral.__url__,
+    author=spiral.__author__,
+    author_email=spiral.__email__,
+    license=spiral.__license__,
     packages=['spiral'],
-    data_files=[('spiral', ['spiral/frequencies.pickle', 'spiral/frequencies.csv'])],
+    data_files=[('spiral', ['spiral/data/frequencies.pklz',
+                            'spiral/data/dictionary.pklz'])],
+    scripts=['bin/spiral'],
     install_requires=reqs,
     platforms='any',
 )
