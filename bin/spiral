@@ -18,7 +18,8 @@ import spiral
 from spiral import ronin
 from spiral import samurai
 from spiral.simple_splitters import pure_camelcase_split, safe_simple_split
-from spiral.simple_splitters import simple_split
+from spiral.simple_splitters import simple_split, elementary_split
+from spiral.simple_splitters import heuristic_split
 
 
 # Global constants.
@@ -28,7 +29,9 @@ _available_splitters = {'ronin': (ronin.init, ronin.split),
                         'samurai': (samurai.init, samurai.split),
                         'pure_camelcase_split': (None, pure_camelcase_split),
                         'safe_simple_split': (None, safe_simple_split),
-                        'simple_split': (None, simple_split)}
+                        'simple_split': (None, simple_split),
+                        'elementary_split': (None, elementary_split),
+                        'heuristic_split': (None, heuristic_split)}
 
 
 # Main program.
