@@ -15,7 +15,7 @@ except:
 
 from spiral import ronin
 
-cases = {
+success_cases = {
     'JavaTokenMarker': ['Java', 'Token', 'Marker'],
     'ullMax': ['ull', 'Max'],
     'cmdextdir': ['cmd', 'ext', 'dir'],
@@ -88,28 +88,38 @@ cases = {
     'getxy': ['get', 'xy'],
     'TRAinfo': ['TRA', 'info'],
     'initVtbl': ['init', 'V', 'tbl'],
+}
 
-    # The following are known failures currently (2018-03-21)
-#    'driveourtrucks': ['drive', 'our', 'trucks'],
-#    'uval': ['u', 'val'],
-#    'hisip': ['his', 'ip'],
-#    'lunch_defendj': ['lunch', 'defend', 'j'],
-#    'sandcx': ['sandcx'],
-#    'numberoferrorgroups': ['number', 'of', 'error', 'groups'],
-#    'thisisatest': ['this', 'is', 'a', 'test'],
-#    'singlexmin': ['single', 'x', 'min'],
-#    'icause': ['i', 'cause'],
-#    'argv': ['arg', 'v'],
-
+failure_cases = {
+   'driveourtrucks': ['drive', 'our', 'trucks'],
+   'uval': ['u', 'val'],
+   'hisip': ['his', 'ip'],
+   'lunch_defendj': ['lunch', 'defend', 'j'],
+   'sandcx': ['sandcx'],
+   'numberoferrorgroups': ['number', 'of', 'error', 'groups'],
+   'thisisatest': ['this', 'is', 'a', 'test'],
+   'singlexmin': ['single', 'x', 'min'],
+   'icause': ['i', 'cause'],
+   'argv': ['arg', 'v'],
 }
 
 successes = 0
 failures = 0
-for identifier, expected in sorted(cases.items()):
+
+for identifier, expected in sorted(success_cases.items()):
     result = ronin.split(identifier)
     if result != expected:
         failures +=1
-        print('{}: {}'.format(identifier, result))
+        print('unexpected failure: {} => {}'.format(identifier, result))
     else:
         successes +=1
-print('{} failures, {} successes'.format(failures, successes))
+
+for identifier, expected in sorted(failure_cases.items()):
+    result = ronin.split(identifier)
+    if result != expected:
+        successes +=1
+    else:
+        print('unexpected success: {} => {}'.format(identifier, result))
+        failures +=1
+
+print('{} surprises, {} as expected'.format(failures, successes))
