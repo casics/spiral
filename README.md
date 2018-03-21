@@ -19,7 +19,7 @@ Table of Contents
    * [Install dependencies](#-install-dependencies)
    * [Download and install Spiral](#-download-and-install-spiral)
 * [Basic operation](#︎-basic-operation)
-* [Performance](#-performance)
+* [Performance: Ronin](#-performance)
 * [Limitations](#️-limitations)
 * [More information](#-more-information)
 * [Getting help and support](#-getting-help-and-support)
@@ -96,11 +96,11 @@ Here are the splitters implemented in Spiral at this time:
 | `digit_split`          | split only at digits                                                                                                    |
 | `pure_camelcase_split` | split at forward camel case transitions (lower to upper case)                                                           |
 | `safe_simple_split`    | split at hard delimiter characters and forward camel case only; won't split strings that don't follow strict camel case |
-| `simple_split`         | split at hard delimiter characters and forward camel case, even if a string doesn't follow strict camel case conventions  |
+| `simple_split`         | split at hard delimiter characters and forward camel case, even if a string doesn't follow strict camel case conventions |
 | `elementary_split`     | split by hard delimiters, forward camel case, and digits                                                                |
 | `heuristic_split`      | split by hard delimiters, forward camel case, and digits, but recognize special cases such as `utf8`, `sha256`, etc.    |
 | Samurai                | frequency-based algorithm published in the literature                                                                   |
-| Ronin                  | complex frequency-based algorithm originally based on Samurai but greatly extended                                      |
+| Ronin                  | frequency-based algorithm based on Samurai but greatly extended (see [next section](#-performance))                     |
 
 The following table illustrates the behavior of the simpler splitters.
 
@@ -146,8 +146,8 @@ The following table illustrates the behavior of the simpler splitters.
 
 Ronin is more advanced than any of the simple splitters above.  It does everything `heuristic_splitter` does, but handles far more difficult cases. Its behavior is discussed in the next section.
 
-🎯 Performance
---------------
+🎯 Performance: Ronin
+--------------------
 
 Splitting identifiers is deceptively difficult.  It is a research-grade problem for which no perfect solution exists.  Even in cases where the input consists of identifiers that strictly follow conventions such as camel case, ambiguities can arise.  For example, correctly splitting `J2SEProjectTypeProfiler` into `J2SE`, `Project`, `Type`, `Profiler` requires the reader to recognize `J2SE` as a unit.  The task of splitting identifiers is made more difficult when there are no case transitions or other obvious boundaries in an identifier.  And then there is the small problem that humans are often simply inconsistent!
 
@@ -205,7 +205,9 @@ Ronin is the most advanced splitter in the Spiral package, but it is not perfect
 📚 More information
 -----------------
 
-Ronin's core loop and approach was originally based on Samurai, described in the following paper.  The implementation of Ronin was created by the author from the description of the algorithm published in the paper, then modified repeatedly in an attempt to improve performance.  A significant goal in Ronin was to produce a splitter that had acceptable performance without having to use a local frequency table derived from a source code base being processed.
+The name "Ronin" is a play on the use of the name "Samurai" by Enslen et al. (2009) for their identifier splitting algorithm.  The core loop of Ronin is based on Samurai, but it would be inappropriate to call this implementation Samurai too.  In an effort to imply the lineage of this modified algorithm, I chose "Ronin" (a name referring to a drifter samurai without a master, during the Japanese feudal period).
+
+I implemented Samurai based on the description of the algorithm published in the following paper, then modified it repeatedly in an attempt to improve performance.  Ronin is the result.  A goal in Ronin was to produce a splitter that had acceptable performance even without using a local frequency table derived from a source code base being processed.
 
 <details>
 <summary><a href="https://dl.acm.org/citation.cfm?id=1591139">
