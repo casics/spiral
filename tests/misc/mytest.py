@@ -76,6 +76,7 @@ cases = {
     'readcmd': ['read', 'cmd'],
     'nonnegativedecimaltype': ['nonnegative', 'decimal', 'type'],
     'filesaveas': ['file', 'save', 'as'],
+    'filesave': ['file', 'save'],
     'wickedweather': ['wicked', 'weather'],
     'liquidweather': ['liquid', 'weather'],
     'driveourtrucks': ['drive', 'our', 'trucks'],
@@ -87,6 +88,13 @@ cases = {
     'rescale': ['rescale'],
     'csize': ['c', 'size'],
     'xmax': ['x', 'max'],
+    'cdplayer': ['cd', 'player'],
+    'cdimage': ['cd', 'image'],
+    'xmin': ['x', 'min'],
+    'iptool': ['ip', 'tool'],
+    'getxy': ['get', 'xy'],
+    'TRAinfo': ['TRA', 'info'],
+    'initVtbl': ['init', 'V', 'tbl'],
 }
 
 successes = 0
