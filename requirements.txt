@@ -1,5 +1,7 @@
-plac==0.9.1
-setuptools==36.5.0
-scipy==0.18.1
+nltk==3.2.1
+humanize==0.5.1
+termcolor==1.1.0
+setuptools==38.5.1
+six==1.11.0
+plac==0.9.6
 pytest==3.0.5
-pyenchant==1.6.11
