@@ -75,26 +75,28 @@ def find_parameters(vars):
     global tests
     global lowest
 
-    var_low_freq_cutoff       = vars[0]
+    var_low_freq_cutoff    = vars[0]
     # A length_cutoff of 2 is consistently the best performing in all my
     # tests, and in addition, allowing 1 sometimes leads to *extremely* long
     # times to split some identifiers.  So I've stopped trying to vary this.
-    var_length_cutoff         = 2 #vars[1]
-    var_min_short_string_freq = vars[2]*10
-    var_normal_exponent       = vars[3]
-    var_dict_word_exponent    = vars[4]
-    var_camel_bias            = vars[5]
+    var_length_cutoff      = 2 #vars[1]
+    var_short_min_freq     = vars[2]*10
+    var_normal_exponent    = vars[3]
+    var_dict_word_exponent = vars[4]
+    var_camel_bias         = vars[5]
     # Platypus seems to have trouble with varying really small decimals, so I
     # use a larger number in the setup and then divide here to make it smaller.
-    var_split_bias            = vars[6]/1000
+    var_recognition_bias   = vars[6]/1000
+    var_alt_exponent       = vars[7]
 
     ronin.init(low_freq_cutoff=var_low_freq_cutoff,
                length_cutoff=var_length_cutoff,
-               min_short_string_freq=var_min_short_string_freq,
+               short_min_freq=var_short_min_freq,
                normal_exponent=var_normal_exponent,
                dict_word_exponent=var_dict_word_exponent,
                camel_bias=var_camel_bias,
-               split_bias=var_split_bias)
+               recognition_bias=var_recognition_bias,
+               alt_exponent=var_alt_exponent)
 
     results = []
     failures_text = ''
@@ -118,11 +120,12 @@ def find_parameters(vars):
         else:
             failures_text += '{}: {}'.format(name, failures)
 
-    msg('{} f_cut = {} len_cut = {} min_sh_f = {} n_exp = {:.4f}'
-        ' d_exp = {:.4f} camel_bias = {:.4f} split_bias = {:.8f}'
+    msg('{} f_cut = {} l_cut = {} min_sh_f = {} n_exp = {:.4f}'
+        ' d_exp = {:.4f} cam_bias = {:.4f} scr_bias = {:.8f} alt_fact = {:.4f}'
         .format(failures_text, var_low_freq_cutoff, var_length_cutoff,
-                var_min_short_string_freq, var_normal_exponent,
-                var_dict_word_exponent, var_camel_bias, var_split_bias))
+                var_short_min_freq, var_normal_exponent,
+                var_dict_word_exponent, var_camel_bias, var_recognition_bias,
+                var_alt_exponent))
 
     return results
 
@@ -197,7 +200,8 @@ http://platypus.readthedocs.io/en/latest/experimenter.html
              Real(0.05, 0.8),      # normal_exponent
              Real(0.05, 0.8),      # dict_word_exponent
              Real(0, 10),          # camel_bias
-             Real(0, 0.01)]        # split_bias*1000
+             Real(0, 0.01),        # recognition_bias*1000
+             Real(.1, 1.5)]        # alt_exponent
 
     problem = Problem(len(args), len(tests))
     problem.function = find_parameters
@@ -238,10 +242,11 @@ http://platypus.readthedocs.io/en/latest/experimenter.html
                 v = solution.variables
                 msg('scores = {} low_freq_cutoff = {}, length_cutoff = {}'
                     ' min_short_freq = {} norm_exp = {:.5f}'
-                    ' dict_exp = {:.5f} camel_bias = {:.5f} split_bias = {:.9f}'
+                    ' dict_exp = {:.5f} camel_bias = {:.5f}'
+                    ' recognition_bias = {:.9f} alt_exponent = {:.5f}'
                     # Note: MAKE SURE TO MATCH MULTIPLIERS USED IN find_parameters()
                     .format(o, arg0_decoder(v[0]), arg1_decoder(v[1]),
-                            arg2_decoder(v[2])*10, v[3], v[4], v[5], v[6]/1000))
+                            arg2_decoder(v[2])*10, v[3], v[4], v[5], v[6]/1000, v[7]))
 
 
 # Utility functions.
