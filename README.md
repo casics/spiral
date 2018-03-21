@@ -40,6 +40,7 @@ Spiral uses a number of Python modules that may or may not be installed in your 
 
 * [NLTK](https://www.nltk.org/install.html), particularly `nltk_words` and `ntlk_wordnet` from the `nltk.corpus` module and the `nltk.stem` module.
 * [plac](https://pypi.python.org/pypi/plac), a command line arguments parser.
+* [Platypus](http://platypus.readthedocs.io/en/latest/), a multiobject optimization library (but only if you want to optimize new parameter values)
 
 ### ⓶&nbsp;&nbsp; _Download and install Spiral_
 
@@ -164,8 +165,8 @@ Spiral includes copies of these data sets in the [tests/data](tests/data) subdir
 
 Many of the "failures" against these sets of identifiers are actually not failures, but cases that Ronin gets a more correct answer or where there is a legitimate difference in interpretation.  Here are some examples:
 
-| Token | Ludiso | Ronin |
-|-------|--------|-------|
+| Identifier | Ludiso result | Ronin split |
+|------------|---------------|-------------|
 | `a.ecart`         | `a` `ecart` | `a` `e` `cart` |
 | `ConvertToAUTF8String` | `Convert` `To` `AUTF` `8` `String` | `Convert` `To` `A` `UTF8` `String` |
 | `MAPI_BCC`        | `MAPI` `BCC` | `M` `API` `BCC` |
@@ -176,8 +177,8 @@ Names like `fread` could be considered appropriate to leave alone, but the `f` i
 
 Some other differences with Ludiso are due to Ronin splitting terms that are more typically considered separate words but are treated as one word in Ludiso, or vice versa.  Examples:
 
-| Token  | Ludiso         | Ronin |
-|--------|----------------|--------|
+| Identifier  | Ludiso result  | Ronin split |
+|-------------|----------------|-------------|
 | `FF_LOSS_COLORSPACE` |  `FF` `LOSS` `COLORSPACE` | `FF` `LOSS` `COLOR` `SPACE` |
 | `m_bFilenameMode` | `m` `b` `File` `name` `Mode` | `m` `b` `Filename` `Mode` |
 
@@ -253,8 +254,19 @@ Everyone is asked to read and respect the [code of conduct](CONDUCT.md) when par
 ❤️ Acknowledgments
 ------------------
 
-Funding for this and other CASICS work has come from the [National Science Foundation](https://nsf.gov) via grant NSF EAGER #1533792 (Principal Investigator: Michael Hucka).
+Funding for this and other CASICS work has come from the [National Science Foundation](https://nsf.gov) via grant NSF EAGER #1533792 (Principal Investigator: Michael Hucka) to the California Institute of Technology.
 
 The installation of Spiral includes a dictionary containing words from the [NTLK](https://github.com/nltk) project, specifically the `words` and `wordnet` dictionaries.  The `word` dictionary is public domain, but the `wordnet` dictionary is copyright 2006 by Princeton University and made available under [license terms](https://wordnet.princeton.edu/license-and-commercial-use) that permit free redistribution.
+
+The vector artwork of the segmented spiral illusion at the top of this page was obtained from [www.123freevectors.com](www.123freevectors.com).
     
-The vector artwork used on this page was obtained from [www.123freevectors.com](www.123freevectors.com).
+<div align="center">
+  <a href="https://www.nsf.gov">
+    <img width="105" height="105" src=".graphics/NSF.svg">
+  </a>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="https://www.caltech.edu">
+    <img width="100" height="100" src=".graphics/caltech-round.svg">
+  </a>
+</div>
