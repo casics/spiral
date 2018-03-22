@@ -49,6 +49,7 @@ TAGS
 __pycache__/
 *.py[cod]
 *$py.class
+.cache
 
 # Project-specific things to ignore:
 # .............................................................................
