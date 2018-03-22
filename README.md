@@ -59,7 +59,7 @@ sudo python3 setup.py install
 ▶︎ Basic operation
 ------------------
 
-Spiral includes a command line program for exploration and experimentation, but it is meant to be used as a package by other Python programs.  To use it in a Python program, simply import a splitter and then call it.
+Spiral is extremely easy to use.  To use a Spiral splitter in a Python program, simply import a splitter and then call it.
 
 ```python
 from spiral.simple_splitters import pure_camelcase_split
@@ -67,11 +67,12 @@ print(pure_camelcase_split('TestString'))
 
 ```
 
-Some splitters take optional parameters, and the more complex splitters have an `init()` function that you can optionally call to set additional parameters or load data.  Currently, only Ronin and Samurai have initialization functions&mdash;please see their documentation for information about the arguments they accept.  Calling `init()` is optional, however, and if you do not call it, Ronin and Samurai will call `init()` automatically upon the first invocation.
+Some splitters take optional parameters, and the more complex splitters have an `init()` function that you can optionally call to set additional parameters or load data.  Currently, only Ronin and Samurai have initialization functions, and calling `init()` is optional&mdash;if you do not call it, Ronin and Samurai will call their `init()` functions automatically.
 
-Here are some examples of using Ronin.  The following input,
+Here are some examples of using the Ronin splitter algorithm.  The following input,
 
 ```python
+from spiral import ronin
 for s in [ 'mStartCData', 'nonnegativedecimaltype', 'getUtf8Octets', 'GPSmodule', 'savedefaultsbutton']:
     print(ronin.split(s))
 ```
@@ -86,9 +87,9 @@ produces the following output:
 ['save', 'defaults', 'button']
 ```
 
-Spiral also includes a command-line program named `spiral` in the [bin](bin) subdirectory to split strings provided on the command line or in a file.  (_**Note**_: Ronin and Samurai first load internal data files, which causes a start-up delay.  In normal usage, inside an application, Spiral will only load the data once at first invocation and subsequent calls will be fast.  However, the command-line program can't save the data across invocations, so the startup cost occurs every time.  This is only a one-time startup delay and not typical for normal Spiral usage.)
+Spiral also includes a command-line program named `spiral` in the [bin](bin) subdirectory; it will split strings provided on the command line or in a file, and is useful for experimenting with Spiral.  (_**Note**_: Ronin and Samurai first load internal data files, which causes a start-up delay.  In normal usage, called from an application, Spiral will only load the data once at first invocation and subsequent calls will be fast.  However, the command-line program can't save the data across invocations, so the startup cost occurs every time.  This is only a one-time startup delay and not typical for normal Spiral usage.)
 
-Here are the splitters implemented in Spiral at this time:
+Here is a list of all the splitters implemented in Spiral at this time:
 
 | Splitter name          | Operation                                                                                                               |
 |------------------------|-------------------------------------------------------------------------------------------------------------------------|
@@ -163,7 +164,7 @@ Spiral includes copies of these data sets in the [tests/data](tests/data) subdir
 | [INTT](tests/data/intt.tsv)       |                 17,287   | 18,772          | 92.09%   |
 | [Ludiso](tests/data/ludiso.tsv)   |                 2,248    | 2,663           | 84.42%   |
 
-Many of the "failures" against these sets of identifiers are actually not failures, but cases that Ronin gets a more correct answer or where there is a legitimate difference in interpretation.  Here are some examples:
+Many of the "failures" against these sets of identifiers are actually not failures, but cases where Ronin gets a more correct answer or where there is a legitimate difference in interpretation.  Here are some examples:
 
 | Identifier | Ludiso result | Ronin split |
 |------------|---------------|-------------|
@@ -198,7 +199,7 @@ Ronin is the most advanced splitter in the Spiral package, but it is not perfect
 
 The name "Ronin" is a play on the use of the name "Samurai" by Enslen et al. (2009) for their identifier splitting algorithm.  The core loop of Ronin is based on Samurai, but it would be inappropriate to call this implementation Samurai too.  In an effort to imply the lineage of this modified algorithm, I chose "Ronin" (a name referring to a drifter samurai without a master, during the Japanese feudal period).
 
-I implemented Samurai based on the description of the algorithm published in the following paper, then modified it repeatedly in an attempt to improve performance.  Ronin is the result.  A goal in Ronin was to produce a splitter that had acceptable performance even without using a local frequency table derived from a source code base being processed.
+I implemented Samurai based on the description of the algorithm published in the following paper, then modified it repeatedly in an attempt to improve performance.  Ronin is the result.  A goal for Ronin was to produce a splitter that had good performance even without using a local frequency table.
 
 <details>
 <summary><a href="https://dl.acm.org/citation.cfm?id=1591139">
