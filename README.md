@@ -19,7 +19,8 @@ Table of Contents
    * [Install dependencies](#-install-dependencies)
    * [Download and install Spiral](#-download-and-install-spiral)
 * [Basic operation](#︎-basic-operation)
-* [Performance: Ronin](#-performance)
+* [Performance of Ronin](#-performance-of-ronin)
+* [Other splitters in Spiral](#%EF%B8%8F-other-splitters-in-spiral)
 * [Limitations](#️-limitations)
 * [More information](#-more-information)
 * [Getting help and support](#-getting-help-and-support)
@@ -90,6 +91,44 @@ produces the following output:
 
 Spiral also includes a command-line program named `spiral` in the [bin](bin) subdirectory; it will split strings provided on the command line or in a file, and is useful for experimenting with Spiral.  (_**Note**_: Ronin and Samurai first load internal data files, which causes a start-up delay.  In normal usage, called from an application, Spiral will only load the data once at first invocation and subsequent calls will be fast.  However, the command-line program can't save the data across invocations, so the startup cost occurs every time.  This is only a one-time startup delay and not typical for normal Spiral usage.)
 
+
+🎯 Performance of Ronin
+----------------------
+
+Splitting identifiers is deceptively difficult.  It is a research-grade problem for which no perfect solution exists.  Even in cases where the input consists of identifiers that strictly follow conventions such as camel case, ambiguities can arise.  For example, correctly splitting `J2SEProjectTypeProfiler` into `J2SE`, `Project`, `Type`, `Profiler` requires the reader to recognize `J2SE` as a unit.  The task of splitting identifiers is made more difficult when there are no case transitions or other obvious boundaries in an identifier.  And then there is the small problem that humans are often simply inconsistent!
+
+Ronin is an advanced splitter that uses a variety of heuristic rules, English dictionaries, and tables of token frequencies obtained from mining source code repositories.  Ronin includes a default table of term frequencies derived from an analysis of over 46,000 randomly selected software projects in GitHub that contained at least one Python source code file.  The tokens were extracted using software from Spiral's parent project, [CASICS](https://github.com/casics) (specifically, the [extractor](https://github.com/casics/extractor) package), and the frequency table constructed using a procedure encoded in the small program `create_frequency_file` [included with Spiral](utils/create_frequency_file).  Ronin also has a number of parameters that need to be tuned; this can be done using the optimization program `optimize-ronin` [in the dev/optimization subdirectory](dev/optimization/optimize-ronin).  The default parameter values were derived by optimizing performance against two data sets available from other reseerch groups:
+
+1. The [Loyola University of Delaware Identifier Splitting Oracle (Ludiso)](http://www.cs.loyola.edu/~binkley/ludiso/)
+2. The INTT data set, extracted from the [zip archive of INTT](http://oro.open.ac.uk/28352/)
+
+Spiral includes copies of these data sets in the [tests/data](tests/data) subdirectory.  The parameters derived primarily by running against the INTT database of 18,772 identifiers and their splits.  The following table summarizes the results:
+
+| Data set                          | Number of splits matched by Ronin | Total in data set | Accuracy |
+|-----------------------------------|------------------------:|---------------:|----------:|
+| [INTT](tests/data/intt.tsv)       |                 17,287   | 18,772          | 92.09%   |
+| [Ludiso](tests/data/ludiso.tsv)   |                 2,248    | 2,663           | 84.42%   |
+
+Many of the "failures" against these sets of identifiers are actually not failures, but cases where Ronin gets a more correct answer or where there is a legitimate difference in interpretation.  Here are some examples:
+
+| Identifier | Ludiso result | Ronin split |
+|------------|---------------|-------------|
+| `a.ecart`         | `a` `ecart` | `a` `e` `cart` |
+| `ConvertToAUTF8String` | `Convert` `To` `AUTF` `8` `String` | `Convert` `To` `A` `UTF8` `String` |
+| `MAPI_BCC`        | `MAPI` `BCC` | `M` `API` `BCC` |
+| `GetWSIsEnabled`  | `Get` `WSIs` `Enabled` | `Get` `WS` `Is` `Enabled` |
+| `fread`           | `fread` | `f` `read` |
+| `FF_LOSS_COLORSPACE` |  `FF` `LOSS` `COLORSPACE` | `FF` `LOSS` `COLOR` `SPACE` |
+| `m_bFilenameMode` | `m` `b` `File` `name` `Mode` | `m` `b` `Filename` `Mode` |
+
+Names like `fread` could be considered appropriate to leave alone, but the `f` in `fread` actually stands for "file", and thus IMHO it makes sense to split it&mdash;splitting identifiers into meaningful tokens is the purpose of Ronin, after all.  Conversely, tokens such as `Utf8` should be left as units because they are meaningful.  Differences involving some other terms such as `color space` are due to Ronin splitting terms that are typically considered separate words but are treated as one word in Ludiso, or vice versa.  (The main entry in Wikipedia for "color space" is two words, while for "filename" it is one word.)  This sometimes also arises because Ronin recognizes prefixes and sometimes does not split words because they would not be in normal written English, such as `nonblock` instead of `non` `block`.  Still other differences between Ronin's output and the expected splits given in Ludiso and INTT are due to inconsistencies in the Ludiso and INTT data sets.  For example, sometimes a token within a larger identifier is split in one case but not in another.  Finally, some other differences are cases where the Ludiso split seems to favor program-specific names.  For example, `QWheelEvent` is split as [&nbsp;`QWheel`, `Event`&nbsp;] whereas Ronin will split it as [&nbsp;`Q`, `Wheel`, `Event`&nbsp;].
+
+So, Ronin's performance may be better than the pure numbers imply.  However, without checking every Ludiso case and manually reinterpreting the splits, we can't say for sure.  All that aside, Ronin definitely gets many cases wrong.
+
+
+⚙️ Other splitters in Spiral
+----------------------------
+
 Here is a list of all the splitters implemented in Spiral at this time:
 
 | Splitter name          | Operation                                                                                                               |
@@ -146,40 +185,7 @@ The following table illustrates the differences between the simpler splitters.
 | `J2SE4me`      | `J2SE4me`  | `J2SE4me`  | `J2SE4me`  | `J` `2` `SE` `4` `me`  | `J2SE` `4` `me` |
 | `IPv4addr`     | `IPv4addr`  | `IPv4addr`  | `IPv4addr`  | `IPv` `4` `addr`  | `IPv4` `addr` |
 
-Ronin is more advanced than any of the simple splitters above.  It does everything `heuristic_splitter` does, but handles far more difficult cases. Its behavior is discussed in the next section.
-
-🎯 Performance: Ronin
---------------------
-
-Splitting identifiers is deceptively difficult.  It is a research-grade problem for which no perfect solution exists.  Even in cases where the input consists of identifiers that strictly follow conventions such as camel case, ambiguities can arise.  For example, correctly splitting `J2SEProjectTypeProfiler` into `J2SE`, `Project`, `Type`, `Profiler` requires the reader to recognize `J2SE` as a unit.  The task of splitting identifiers is made more difficult when there are no case transitions or other obvious boundaries in an identifier.  And then there is the small problem that humans are often simply inconsistent!
-
-Ronin is an advanced splitter that uses a variety of heuristic rules, English dictionaries, and tables of token frequencies obtained from mining source code repositories.  Ronin includes a default table of term frequencies derived from an analysis of over 46,000 randomly selected software projects in GitHub that contained at least one Python source code file.  The tokens were extracted using software from Spiral's parent project, [CASICS](https://github.com/casics) (specifically, the [extractor](https://github.com/casics/extractor) package), and the frequency table constructed using a procedure encoded in the small program `create_frequency_file` [included with Spiral](utils/create_frequency_file).  Ronin also has a number of parameters that need to be tuned; this can be done using the optimization program `optimize-ronin` [in the dev/optimization subdirectory](dev/optimization/optimize-ronin).  The default parameter values were derived by optimizing performance against two data sets available from other reseerch groups:
-
-1. The [Loyola University of Delaware Identifier Splitting Oracle (Ludiso)](http://www.cs.loyola.edu/~binkley/ludiso/)
-2. The INTT data set, extracted from the [zip archive of INTT](http://oro.open.ac.uk/28352/)
-
-Spiral includes copies of these data sets in the [tests/data](tests/data) subdirectory.  The parameters derived primarily by running against the INTT database of 18,772 identifiers and their splits.  The following table summarizes the results:
-
-| Data set                          | Number of splits matched by Ronin | Total in data set | Accuracy |
-|-----------------------------------|------------------------:|---------------:|----------:|
-| [INTT](tests/data/intt.tsv)       |                 17,287   | 18,772          | 92.09%   |
-| [Ludiso](tests/data/ludiso.tsv)   |                 2,248    | 2,663           | 84.42%   |
-
-Many of the "failures" against these sets of identifiers are actually not failures, but cases where Ronin gets a more correct answer or where there is a legitimate difference in interpretation.  Here are some examples:
-
-| Identifier | Ludiso result | Ronin split |
-|------------|---------------|-------------|
-| `a.ecart`         | `a` `ecart` | `a` `e` `cart` |
-| `ConvertToAUTF8String` | `Convert` `To` `AUTF` `8` `String` | `Convert` `To` `A` `UTF8` `String` |
-| `MAPI_BCC`        | `MAPI` `BCC` | `M` `API` `BCC` |
-| `GetWSIsEnabled`  | `Get` `WSIs` `Enabled` | `Get` `WS` `Is` `Enabled` |
-| `fread`           | `fread` | `f` `read` |
-| `FF_LOSS_COLORSPACE` |  `FF` `LOSS` `COLORSPACE` | `FF` `LOSS` `COLOR` `SPACE` |
-| `m_bFilenameMode` | `m` `b` `File` `name` `Mode` | `m` `b` `Filename` `Mode` |
-
-Names like `fread` could be considered appropriate to leave alone, but the `f` in `fread` actually stands for "file", and thus IMHO it makes sense to split it&mdash;splitting identifiers into meaningful tokens is the purpose of Ronin, after all.  Conversely, tokens such as `Utf8` should be left as units because they are meaningful.  Differences involving some other terms such as `color space` are due to Ronin splitting terms that are typically considered separate words but are treated as one word in Ludiso, or vice versa.  (The main entry in Wikipedia for "color space" is two words, while for "filename" it is one word.)  This sometimes also arises because Ronin recognizes prefixes and sometimes does not split words because they would not be in normal written English, such as `nonblock` instead of `non` `block`.  Still other differences between Ronin's output and the expected splits given in Ludiso and INTT are due to inconsistencies in the Ludiso and INTT data sets.  For example, sometimes a token within a larger identifier is split in one case but not in another.  Finally, some other differences are cases where the Ludiso split seems to favor program-specific names.  For example, `QWheelEvent` is split as [&nbsp;`QWheel`, `Event`&nbsp;] whereas Ronin will split it as [&nbsp;`Q`, `Wheel`, `Event`&nbsp;].
-
-So, Ronin's performance may be better than the pure numbers imply.  However, without checking every Ludiso case and manually reinterpreting the splits, we can't say for sure.  All that aside, Ronin definitely gets many cases wrong.
+Ronin and Samurai are more advanced than any of the simple splitters above.  Ronin in particular does everything `heuristic_splitter` does, but handles far more difficult cases.
 
 ⚠️ Limitations
 --------------
