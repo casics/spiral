@@ -73,7 +73,7 @@ Here are some examples of using the Ronin splitter algorithm.  The following inp
 
 ```python
 from spiral import ronin
-for s in [ 'mStartCData', 'nonnegativedecimaltype', 'getUtf8Octets', 'GPSmodule', 'savedefaultsbutton']:
+for s in [ 'mStartCData', 'nonnegativedecimaltype', 'getUtf8Octets', 'GPSmodule', 'savefileas', 'nbrOfbugs']:
     print(ronin.split(s))
 ```
 
@@ -84,7 +84,8 @@ produces the following output:
 ['nonnegative', 'decimal', 'type']
 ['get', 'Utf8', 'Octets']
 ['GPS', 'module']
-['save', 'defaults', 'button']
+['save', 'file', 'as']
+['nbr', 'Of', 'bugs']
 ```
 
 Spiral also includes a command-line program named `spiral` in the [bin](bin) subdirectory; it will split strings provided on the command line or in a file, and is useful for experimenting with Spiral.  (_**Note**_: Ronin and Samurai first load internal data files, which causes a start-up delay.  In normal usage, called from an application, Spiral will only load the data once at first invocation and subsequent calls will be fast.  However, the command-line program can't save the data across invocations, so the startup cost occurs every time.  This is only a one-time startup delay and not typical for normal Spiral usage.)
