@@ -34,9 +34,9 @@ _Spiral_ is a Python 3 package that implements numerous identifier splitting alg
 ✺ Installation instructions
 ---------------------------
 
-### ⓵&nbsp;&nbsp; _Install dependencies_
+### ⓵&nbsp;&nbsp; _Check and install dependencies_
 
-Spiral uses a number of Python modules that may or may not be installed in your Python environment.  You will need to install them separately:
+Spiral uses a number of Python modules that may or may not be installed in your Python environment.  Depending on the approach you use to install Spiral, you may or may not need to install them separately:
 
 * [NLTK](https://www.nltk.org/install.html), particularly `nltk_words` and `ntlk_wordnet` from the `nltk.corpus` module and the `nltk.stem` module.
 * [plac](https://pypi.python.org/pypi/plac), a command line arguments parser.
