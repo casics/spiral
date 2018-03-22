@@ -1,7 +1,7 @@
 Spiral<img width="130px" align="right" src=".graphics/spiral.svg">
 =======
 
-Spiral is a Python module that provides several different functions for splitting identifiers found in source code files.  The name _spiral_ is a loose acronym based on "_SPlitters for IdentifieRs: A Library_".
+Spiral is a Python module that provides several different functions for splitting identifiers found in source code files.  The name _Spiral_ is a loose acronym based on "_SPlitters for IdentifieRs: A Library_".
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python](https://img.shields.io/badge/Python-3.4+-brightgreen.svg?style=flat-square)](http://shields.io)
