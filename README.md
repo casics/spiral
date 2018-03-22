@@ -102,7 +102,7 @@ Here are the splitters implemented in Spiral at this time:
 | Samurai                | frequency-based algorithm published in the literature                                                                   |
 | Ronin                  | frequency-based algorithm based on Samurai but greatly extended (see [next section](#-performance))                     |
 
-The following table illustrates the behavior of the simpler splitters.
+The following table illustrates the differences between the simpler splitters.
 
 | Input string   | pure camel  | safe simple| simple      | elementary   | heuristic  |
 |----------------|-------------|------------|-------------|--------------|------------|
@@ -172,19 +172,10 @@ Many of the "failures" against these sets of identifiers are actually not failur
 | `MAPI_BCC`        | `MAPI` `BCC` | `M` `API` `BCC` |
 | `GetWSIsEnabled`  | `Get` `WSIs` `Enabled` | `Get` `WS` `Is` `Enabled` |
 | `fread`           | `fread` | `f` `read` |
-
-Names like `fread` could be considered appropriate to leave alone, but the `f` in `fread` actually stands for "file", and thus IMHO it makes sense to split it&mdash;splitting identifiers into meaningful tokens is the purpose of Ronin, after all.  Conversely, the position take here is that tokens such as `Utf8` should be left as units because they are meaningful
-
-Some other differences with Ludiso are due to Ronin splitting terms that are more typically considered separate words but are treated as one word in Ludiso, or vice versa.  Examples:
-
-| Identifier  | Ludiso result  | Ronin split |
-|-------------|----------------|-------------|
 | `FF_LOSS_COLORSPACE` |  `FF` `LOSS` `COLORSPACE` | `FF` `LOSS` `COLOR` `SPACE` |
 | `m_bFilenameMode` | `m` `b` `File` `name` `Mode` | `m` `b` `Filename` `Mode` |
 
-(The main entry in Wikipedia for "color space" is two words, while for "filename" it is indeed one word.)
-
-Yet other differences between Ronin's output and the expected splits given in Ludiso and INTT are due to inconsistencies in the Ludiso and INTT data sets.  For example, sometimes a token within a larger identifier is split in one case but not in another.  Some other differences are cases where the Ludiso split seems to favor program-specific names.  For example, `QWheelEvent` is split as [&nbsp;`QWheel`, `Event`&nbsp;] whereas Ronin will split it as [&nbsp;`Q`, `Wheel`, `Event`&nbsp;].
+Names like `fread` could be considered appropriate to leave alone, but the `f` in `fread` actually stands for "file", and thus IMHO it makes sense to split it&mdash;splitting identifiers into meaningful tokens is the purpose of Ronin, after all.  Conversely, tokens such as `Utf8` should be left as units because they are meaningful.  Differences involving some other terms such as `color space` are due to Ronin splitting terms that are typically considered separate words but are treated as one word in Ludiso, or vice versa.  (The main entry in Wikipedia for "color space" is two words, while for "filename" it is one word.)  This sometimes also arises because Ronin recognizes prefixes and sometimes does not split words because they would not be in normal written English, such as `nonblock` instead of `non` `block`.  Still other differences between Ronin's output and the expected splits given in Ludiso and INTT are due to inconsistencies in the Ludiso and INTT data sets.  For example, sometimes a token within a larger identifier is split in one case but not in another.  Finally, some other differences are cases where the Ludiso split seems to favor program-specific names.  For example, `QWheelEvent` is split as [&nbsp;`QWheel`, `Event`&nbsp;] whereas Ronin will split it as [&nbsp;`Q`, `Wheel`, `Event`&nbsp;].
 
 So, Ronin's performance may be better than the pure numbers imply.  However, without checking every Ludiso case and manually reinterpreting the splits, we can't say for sure.  All that aside, Ronin definitely gets many cases wrong.
 
