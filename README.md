@@ -5,7 +5,7 @@ Spiral is a Python module that provides several different functions for splittin
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python](https://img.shields.io/badge/Python-3.4+-brightgreen.svg?style=flat-square)](http://shields.io)
-[![Latest version](https://img.shields.io/badge/Latest_version-1.0.0-green.svg?style=flat-square)](http://shields.io)
+[![Latest release](https://img.shields.io/badge/Latest_release-1.0.0-green.svg?style=flat-square)](http://shields.io)
 
 *Authors*:      [Michael Hucka](http://github.com/mhucka)<br>
 *Repository*:   [https://github.com/casics/spiral](https://github.com/casics/spiral)<br>
@@ -30,7 +30,7 @@ Table of Contents
 ☀ Introduction
 -----------------------------
 
-_Spiral_ is a Python 3 package that implements numerous identifier splitting algorithms.  _Identifier splitting_ (also known as _identifier name tokenization_) is the task of breaking apart program identifier strings such as `getInt` or `readUTF8stream` into component tokens: [`get`, `int`] and [`read`, `utf8`, `stream`].  The need for splitting identifiers arises in a variety of contexts, including natural language processing (NLP) methods applied to source code analysis and program comprehension.  Spiral provides some basic naive splitting algorithms, such as a straightforward camel-case splitter, as well as more elaborate heuristic splitters, such as an algorithm we call _Ronin_.
+_Spiral_ is a Python 3 package that implements numerous identifier splitting algorithms.  _Identifier splitting_ (also known as _identifier name tokenization_) is the task of breaking apart program identifier strings such as `getInt` or `readUTF8stream` into component tokens: [`get`, `int`] and [`read`, `utf8`, `stream`].  The need for splitting identifiers arises in a variety of contexts, including natural language processing (NLP) methods applied to source code analysis and program comprehension.  Spiral provides some basic naive splitting algorithms, such as a straightforward camel-case splitter, as well as more elaborate heuristic splitters, such as a new algorithm called _Ronin_.
 
 ✺ Installation instructions
 ---------------------------
