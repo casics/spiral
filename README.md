@@ -89,7 +89,9 @@ produces the following output:
 ['nbr', 'Of', 'bugs']
 ```
 
-Spiral also includes a command-line program named `spiral` in the [bin](bin) subdirectory; it will split strings provided on the command line or in a file, and is useful for experimenting with Spiral.  (_**Note**_: Ronin and Samurai first load internal data files, which causes a start-up delay.  In normal usage, called from an application, Spiral will only load the data once at first invocation and subsequent calls will be fast.  However, the command-line program can't save the data across invocations, so the startup cost occurs every time.  This is only a one-time startup delay and not typical for normal Spiral usage.)
+Spiral also includes a command-line program named `spiral` in the [bin](bin) subdirectory; it will split strings provided on the command line or in a file.  (_**Note**_: Ronin and Samurai load internal data files when they start up.  In normal use, called from an application program, the resulting startup delay will only happen once.  In the command-line program, the data is reloaded at every invocation, causing a startup delay every time.  The delay is not typical for normal Spiral usage.)
+
+By the way, if your goal is to split identifiers obtained during source code mining and you need to filter out gibberish strings of characters before attempting to split them, you may find [Nostril](https://github.com/casics/nostril) (the Nonsense String Evaluator) useful.
 
 
 🎯 Performance of Ronin
