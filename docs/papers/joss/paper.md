@@ -69,4 +69,9 @@ The name "Ronin" is a play on the use of the name "Samurai" [@Enslen2009-gk] for
 The name _Spiral_ is a loose acronym based on "_SPlitters for IdentifieRs: A Library_".
 
 
+# Acknowledgments
+
+This material is based upon work supported by the [National Science Foundation](https://nsf.gov) under Grant Number 1533792.  Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
+
+
 # References
