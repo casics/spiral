@@ -257,7 +257,7 @@ Everyone is asked to read and respect the [code of conduct](CONDUCT.md) when par
 ❤️ Acknowledgments
 ------------------
 
-Funding for this and other CASICS work has come from the [National Science Foundation](https://nsf.gov) via grant NSF EAGER #1533792 (Principal Investigator: Michael Hucka) to the California Institute of Technology.
+This material is based upon work supported by the [National Science Foundation](https://nsf.gov) under Grant Number 1533792 (Principal Investigator: Michael Hucka).  Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
 
 The installation of Spiral includes a dictionary containing words from the [NTLK](https://github.com/nltk) project, specifically the `words` and `wordnet` dictionaries.  The `word` dictionary is public domain, but the `wordnet` dictionary is copyright 2006 by Princeton University and made available under [license terms](https://wordnet.princeton.edu/license-and-commercial-use) that permit free redistribution.
 
