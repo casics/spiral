@@ -259,7 +259,7 @@ Everyone is asked to read and respect the [code of conduct](CONDUCT.md) when par
 
 This material is based upon work supported by the [National Science Foundation](https://nsf.gov) under Grant Number 1533792 (Principal Investigator: Michael Hucka).  Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.
 
-The installation of Spiral includes a dictionary containing words from the [NTLK](https://github.com/nltk) project, specifically the `words` and `wordnet` dictionaries.  The `word` dictionary is public domain, but the `wordnet` dictionary is copyright 2006 by Princeton University and made available under [license terms](https://wordnet.princeton.edu/license-and-commercial-use) that permit free redistribution.
+The installation of Spiral includes a dictionary containing words from the [NTLK](https://github.com/nltk) project, specifically the `words` and `wordnet` dictionaries.  The `word` dictionary is public domain, but the `wordnet` dictionary is copyright 2006 by Princeton University and made available under [license terms](https://wordnet.princeton.edu/license-and-commercial-use) that permit free redistribution.  For more information, please see Princeton University ["About WordNet"](https://wordnet.princeton.edu) (Princeton University, 2010).
 
 The vector artwork of the segmented spiral illusion at the top of this page was obtained from [www.123freevectors.com](www.123freevectors.com).
     
