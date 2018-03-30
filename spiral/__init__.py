@@ -45,3 +45,6 @@ from .simple_splitters import heuristic_split
 # Advanced splitters.
 from . import samurai
 from . import ronin
+
+# Constants that may be useful to users of Spiral.
+from .constants import prefixes, suffixes, special_computing_terms
