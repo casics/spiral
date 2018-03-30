@@ -17,7 +17,7 @@ bibliography: paper.bib
 
 # Summary
 
-_Spiral_ is a Python 3 package that implements numerous identifier splitting algorithms.  _Identifier splitting_ (also known as _identifier name tokenization_) is the task of breaking apart program identifier strings such as `getInt` or `readUTF8stream` into component tokens: [`get`, `int`] and [`read`, `UTF8`, `stream`].  The need for splitting identifiers arises in a variety of contexts, including natural language processing (NLP) methods applied to source code analysis and program comprehension.
+_Spiral_ is a Python package that implements numerous algorithms for splitting identifiers.  _Identifier splitting_ (also known as _identifier name tokenization_) is the task of partioning program identifiers such as `readUTF8stream` into component tokens: [`read`, `UTF8`, `stream`].  The need for splitting identifiers arises in a variety of contexts, including natural language processing (NLP) methods applied to source code analysis and program comprehension.
 
 Spiral is easy to use.  Here are some examples of calling the Ronin splitter algorithm on inputs that would challenge simpler splitters.  The following Python code,
 
@@ -45,7 +45,7 @@ Spiral also includes a command-line program named `spiral`; it will split string
 
 Splitting identifiers is deceptively difficult and remains a research problem for which no perfect solution exists today.  Even in cases where the input consists of identifiers that strictly follow conventions such as camel case, ambiguities can arise.  For example, to split `J2SEProjectTypeProfiler` into [`J2SE`, `Project`, `Type`, `Profiler`] requires the reader to recognize `J2SE` as a unit.  The task of splitting identifiers is made more difficult when there are no case transitions or other obvious boundaries in an identifier.
 
-Spiral provides some several basic naive splitting algorithms, such as a straightforward camel-case splitter, as well as more elaborate heuristic splitters, including a novel algorithm we call _Ronin_.  Ronin uses a variety of heuristic rules, English dictionaries, and tables of token frequencies obtained from mining source code repositories.  It includes a default table of term frequencies derived from an analysis of over 46,000 randomly selected software projects in GitHub that contained at least one Python source code file.
+Spiral provides some several basic naive splitting algorithms, such as a straightforward camel-case splitter, as well as more elaborate heuristic splitters, including a novel algorithm we call _Ronin_.  Ronin uses a variety of heuristic rules, English dictionaries constructed using NLTK [@Bird2004-ld; @Loper2002-su] and WordNet [@Fellbaum1998-pa; @Miller1995-yc], and tables of token frequencies obtained from mining source code repositories.  It includes a default table of term frequencies derived from an analysis of over 46,000 randomly selected software projects in GitHub that contained at least one Python source code file.
 
 
 # Splitters available in Spiral
