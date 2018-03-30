@@ -257,7 +257,7 @@ Everyone is asked to read and respect the [code of conduct](CONDUCT.md) when par
 
 Funding for this and other CASICS work has come from the [National Science Foundation](https://nsf.gov) via grant NSF EAGER #1533792 (Principal Investigator: Michael Hucka) to the California Institute of Technology.
 
-The installation of Spiral includes a dictionary containing words from the [NTLK](https://github.com/nltk) project, specifically the `words` and `wordnet` dictionaries.  The `word` dictionary is public domain, but the `wordnet` dictionary is copyright 2006 by Princeton University and made available under [license terms](https://wordnet.princeton.edu/license-and-commercial-use) that permit free redistribution.
+The installation of Spiral includes a dictionary containing words from the [NTLK](https://github.com/nltk) project, specifically the `words` and `wordnet` dictionaries.  The `word` dictionary is public domain, but the `wordnet` dictionary is copyright 2006 by Princeton University and made available under [license terms](https://wordnet.princeton.edu/license-and-commercial-use) that permit free redistribution.  For more information, please see Princeton University ["About WordNet"](https://wordnet.princeton.edu) (Princeton University, 2010).
 
 The vector artwork of the segmented spiral illusion at the top of this page was obtained from [www.123freevectors.com](www.123freevectors.com).
     
