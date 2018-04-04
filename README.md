@@ -3,10 +3,11 @@ Spiral<img width="130px" align="right" src=".graphics/spiral.svg">
 
 Spiral is a Python module that provides several different functions for splitting identifiers found in source code files.  The name _Spiral_ is a loose acronym based on "_SPlitters for IdentifieRs: A Library_".
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
-[![Python](https://img.shields.io/badge/Python-3.4+-brightgreen.svg?style=flat-square)](http://shields.io)
-[![Latest release](https://img.shields.io/badge/Latest_release-1.0.1-green.svg?style=flat-square)](http://shields.io)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-999999.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
+[![Python](https://img.shields.io/badge/Python-3.4+-yellow.svg?style=flat-square)](http://shields.io)
+[![Latest release](https://img.shields.io/badge/Latest_release-1.0.1-b44e88.svg?style=flat-square)](http://shields.io)
 [![DOI](http://img.shields.io/badge/DOI-10.5281%20%2F%20zenodo.1211835-blue.svg?style=flat-square)](https://doi.org/10.5281/zenodo.1211835)
+[![DOI](http://img.shields.io/badge/JOSS-10.21105%20%2F%20joss.00653-brightgreen.svg?style=flat-square)](https://doi.org/10.21105/joss.00653)
 
 *Authors*:      [Michael Hucka](http://github.com/mhucka)<br>
 *Repository*:   [https://github.com/casics/spiral](https://github.com/casics/spiral)<br>
@@ -15,6 +16,7 @@ Spiral is a Python module that provides several different functions for splittin
 Table of Contents
 -----------------
 
+* [Recent news and activities](#-recent-news-and-activities)
 * [Introduction](#-introduction)
 * [Installation instructions](#-installation-instructions)
    * [Install dependencies](#-install-dependencies)
@@ -27,6 +29,12 @@ Table of Contents
 * [Getting help and support](#-getting-help-and-support)
 * [Contributing — info for developers](#-contributing--info-for-developers)
 * [Acknowledgments](#️-acknowledgments)
+
+🏁 Recent news and activities
+------------------------------
+
+_April 2018_: A [JOSS paper about Spiral](http://joss.theoj.org/papers/10.21105/joss.00653) has been published, and an archive of the Spiral source code version 1.0.1 is also now [available in Zenodo](https://doi.org/10.5281/zenodo.1211835).  There are no functional changes between versions 1.0.0 and and 1.0.1, only documentation changes and the addition of the JOSS paper.
+
 
 ☀ Introduction
 -----------------------------
