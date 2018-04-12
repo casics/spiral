@@ -13,11 +13,16 @@ Spiral is a Python module that provides several different functions for splittin
 *Repository*:   [https://github.com/casics/spiral](https://github.com/casics/spiral)<br>
 *License*:      Unless otherwise noted, this content is licensed under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html) license.
 
+🏁 Recent news and activities
+------------------------------
+
+_April 2018_: A [JOSS paper about Spiral](http://joss.theoj.org/papers/10.21105/joss.00653) has been published, and an archive of the Spiral source code version 1.0.1 is also now [available in Zenodo](https://doi.org/10.5281/zenodo.1211835).  There are no functional changes between versions 1.0.0 and and 1.0.1, only documentation changes and the addition of the JOSS paper.
+
 Table of Contents
 -----------------
 
-* [Recent news and activities](#-recent-news-and-activities)
 * [Introduction](#-introduction)
+* [Please cite the paper](#%EF%B8%8F-please-cite-the-spiral-paper-and-the-version-you-use)
 * [Installation instructions](#-installation-instructions)
    * [Install dependencies](#-install-dependencies)
    * [Download and install Spiral](#-download-and-install-spiral)
@@ -30,16 +35,25 @@ Table of Contents
 * [Contributing — info for developers](#-contributing--info-for-developers)
 * [Acknowledgments](#️-acknowledgments)
 
-🏁 Recent news and activities
-------------------------------
-
-_April 2018_: A [JOSS paper about Spiral](http://joss.theoj.org/papers/10.21105/joss.00653) has been published, and an archive of the Spiral source code version 1.0.1 is also now [available in Zenodo](https://doi.org/10.5281/zenodo.1211835).  There are no functional changes between versions 1.0.0 and and 1.0.1, only documentation changes and the addition of the JOSS paper.
-
-
 ☀ Introduction
 -----------------------------
 
 _Spiral_ is a Python 3 package that implements numerous identifier splitting algorithms.  _Identifier splitting_ (also known as _identifier name tokenization_) is the task of breaking apart program identifier strings such as `getInt` or `readUTF8stream` into component tokens: [`get`, `int`] and [`read`, `utf8`, `stream`].  The need for splitting identifiers arises in a variety of contexts, including natural language processing (NLP) methods applied to source code analysis and program comprehension.  Spiral provides some basic naive splitting algorithms, such as a straightforward camel-case splitter, as well as more elaborate heuristic splitters, such as a new algorithm called _Ronin_.
+
+♥️ Please cite the Spiral paper and the version you use
+------------------------------------------------------
+
+Article citations are **critical** for academic developers.  If you use Spiral and you publish papers about your software, we ask that you **please cite the Spiral paper**:
+
+<dl>
+<dd>
+Hucka, (2018). Spiral: splitters for identifiers in source code files. <i>Journal of Open Source Software</i>, 3(24), 653, <a href="https://doi.org/10.21105/joss.00653">https://doi.org/10.21105/joss.00653</a>
+</dd>
+</dl>
+
+Please also indicate the specific version of Spiral you use, to improve other people's ability to reproduce your results. You can use the Zenodo DOIs we provide for this purpose:
+
+* Spiral release 1.0.1 &rArr; [10.5281/zenodo.1211835](https://doi.org/10.5281/zenodo.1211835)
 
 ✺ Installation instructions
 ---------------------------
