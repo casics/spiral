@@ -93,11 +93,11 @@ and exit without doing anything more.
     if splitter and splitter not in _available_splitters:
         raise SystemExit('Unrecognized splitter: "{}"'.format(splitter))
     if not file and not strings:
-        raise SystemExit('Need a file or string as input argument')
+        raise SystemExit('Need a file or string as input. Use -h to get help.')
     if strings and strings[0].startswith('-'):
         # If it starts with a dash and we get to this point, it's not an arg
         # recognized by plac and it's probably not a string meant to be split.
-        raise SystemExit('Unrecognized argument "{}" (hint: use -h to get help)'
+        raise SystemExit('Unrecognized argument "{}". (Hint: use -h to get help.)'
                          .format(strings[0]))
 
     # Let's do this thing.
