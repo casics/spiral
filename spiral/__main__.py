@@ -52,7 +52,7 @@ _available_splitters = {'ronin': (ronin.init, ronin.split),
     strings     = 'text string(s) to split',
 )
 
-def main(list=False, file=None, version=False, splitter='ronin', *strings):
+def main(list=False, file=None, splitter='ronin', version=False, *strings):
     '''Spiral is "SPlitters for IdentifieRs: A Library".  It implements many
 identifier splitting algorithms.  This command-line program provides a very
 simple interface to run Spiral's splitters, for testing and exploration.
