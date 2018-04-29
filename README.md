@@ -6,10 +6,8 @@ Spiral is a Python module that provides several different functions for splittin
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-999999.svg?style=flat-square)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python](https://img.shields.io/badge/Python-3.4+-yellow.svg?style=flat-square)](http://shields.io)
 [![Latest release](https://img.shields.io/badge/Latest_release-1.1.0-b44e88.svg?style=flat-square)](http://shields.io)
-<!--
-[![DOI](http://img.shields.io/badge/DOI-10.5281%20%2F%20zenodo.1211835-blue.svg?style=flat-square)](https://doi.org/10.5281/zenodo.1211835)
+[![DOI](http://img.shields.io/badge/DOI-10.5281%20%2F%20zenodo.1237123-blue.svg?style=flat-square)](https://zenodo.org/badge/latestdoi/112431873)
 [![DOI](http://img.shields.io/badge/JOSS-10.21105%20%2F%20joss.00653-brightgreen.svg?style=flat-square)](https://doi.org/10.21105/joss.00653)
--->
 
 *Authors*:      [Michael Hucka](http://github.com/mhucka)<br>
 *Repository*:   [https://github.com/casics/spiral](https://github.com/casics/spiral)<br>
