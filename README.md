@@ -24,8 +24,6 @@ Table of Contents
 * [Introduction](#-introduction)
 * [Please cite the paper](#%EF%B8%8F-please-cite-the-spiral-paper-and-the-version-you-use)
 * [Installation instructions](#-installation-instructions)
-   * [Install dependencies](#-install-dependencies)
-   * [Download and install Spiral](#-download-and-install-spiral)
 * [Basic operation](#︎-basic-operation)
 * [Performance of Ronin](#-performance-of-ronin)
 * [Other splitters in Spiral](#%EF%B8%8F-other-splitters-in-spiral)
@@ -55,30 +53,28 @@ Please also indicate the specific version of Spiral you use, to improve other pe
 
 * Spiral release 1.0.1 &rArr; [10.5281/zenodo.1211835](https://doi.org/10.5281/zenodo.1211835)
 
+
 ✺ Installation instructions
 ---------------------------
 
-### ⓵&nbsp;&nbsp; _Check and install dependencies_
-
-Spiral uses a number of Python modules that may or may not be installed in your Python environment.  Depending on the approach you use to install Spiral, you may or may not need to install them separately:
-
-* [NLTK](https://www.nltk.org/install.html), particularly `nltk_words` and `ntlk_wordnet` from the `nltk.corpus` module and the `nltk.stem` module.
-* [plac](https://pypi.python.org/pypi/plac), a command line arguments parser.
-* [Platypus](http://platypus.readthedocs.io/en/latest/), a multiobject optimization library (but only if you want to optimize new parameter values)
-
-### ⓶&nbsp;&nbsp; _Download and install Spiral_
-
-The following is probably the simplest and most direct way to install Spiral on your computer:
+For basic usage, the following is probably the simplest and most direct way to install Spiral on your computer:
 ```sh
 sudo pip3 install git+https://github.com/casics/spiral.git
 ```
 
-Alternatively, you can clone this repository and then run `setup.py`:
+Alternatively, you can clone this GitHub repository and then run `setup.py`:
 ```sh
 git clone https://github.com/casics/spiral.git
 cd spiral
-sudo python3 setup.py install
+sudo python3 -m pip install .
 ```
+
+The above should be all you need to run Spiral out of the box.  If you plan on experimenting with alternative parameter values or alternative dictionaries, you will additionally need to install the following:
+
+* [Platypus-Opt](http://platypus.readthedocs.io/en/latest/), an optimization library (if you want to optimize parameters).  **Important**: _This_ Platypus is not the same as the _other_ package called "Platypus" in PyPI.  Make sure to get [Platypus-Opt](https://pypi.org/project/Platypus-Opt/) or install from the [Platypus repo](http://platypus.readthedocs.io/en/latest/).
+
+* Data modules from [NLTK](https://www.nltk.org/install.html), particularly `nltk_words` and `ntlk_wordnet` from the `nltk.corpus` module and the `nltk.stem` module.  These cannot be installed automatically by `setup.py`&mdash;please refer to the [NLTK installation instructions](http://www.nltk.org/data.html#command-line-installation) for  instructions on how to do it.
+
 
 ▶︎ Basic operation
 ------------------
