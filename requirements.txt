@@ -1,7 +1,7 @@
-nltk==3.2.1
-humanize==0.5.1
-termcolor==1.1.0
-setuptools==38.5.1
-six==1.11.0
-plac==0.9.6
-pytest==3.0.5
+nltk>=3.2.1
+humanize>=0.5.1
+termcolor>=1.1.0
+setuptools>=38.5.1
+six>=1.11.0
+plac>=0.9.6
+pytest>=3.0.5
