@@ -48,7 +48,7 @@ _available_splitters = {'ronin': (ronin.init, ronin.split),
     file        = ('read input from a file',                     'option', 'f'),
     list        = ('list available splitters',                   'flag',   'l'),
     splitter    = ('run named splitter, e.g. "ronin"',           'option', 's'),
-    version     = ('print version info and exit',                'flag',   'v'),
+    version     = ('print version info and exit',                'flag',   'V'),
     strings     = 'text string(s) to split',
 )
 
@@ -72,7 +72,8 @@ The input to this program can be one or more strings on the command line,
 or (using the -f argument) a file of strings.  If given a file of
 strings, it will analyze each line in the file separately.
 
-The splitter to be used can be specified using the -s option.
+The splitter to be used can be specified using the -s option.  Use the -l
+option to print a list of the splitters available.
 
 The optional argument -v will make this program display version information
 and exit without doing anything more.
@@ -84,7 +85,6 @@ and exit without doing anything more.
         print('URL: {}'.format(spiral.__url__))
         print('License: {}'.format(spiral.__license__))
         sys.exit()
-
     if list:
         print('Available splitters:')
         for name, _ in sorted(_available_splitters.items()):
@@ -94,7 +94,13 @@ and exit without doing anything more.
         raise SystemExit('Unrecognized splitter: "{}"'.format(splitter))
     if not file and not strings:
         raise SystemExit('Need a file or string as input argument')
+    if strings and strings[0].startswith('-'):
+        # If it starts with a dash and we get to this point, it's not an arg
+        # recognized by plac and it's probably not a string meant to be split.
+        raise SystemExit('Unrecognized argument "{}" (hint: use -h to get help)'
+                         .format(strings[0]))
 
+    # Let's do this thing.
     if file:
         if os.path.exists(file):
             with open(file) as f:
