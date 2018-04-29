@@ -6,7 +6,7 @@
 # @website https://github.com/casics/spiral
 # =============================================================================
 
-__version__     = '1.0.0'
+__version__     = '1.1.0'
 __title__       = 'Spiral'
 __description__ = 'SPlitters for IdentifieRs: A Library'
 __url__         = 'https://github.com/casics/spiral'
