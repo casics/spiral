@@ -5,7 +5,7 @@ If you publish scholarly papers about work that uses Spiral, **please cite the S
 
 <dl>
 <dd>
-Hucka, M. (2018). Spiral: splitters for identifiers in source code files. <i>Journal of Open Source Software</i>, 3(24), 653, <a href="https://doi.org/10.21105/joss.00653">https://doi.org/10.21105/joss.00653
+Hucka, M. (2018). Spiral: splitters for identifiers in source code files. <i>Journal of Open Source Software</i>, 3(24), 653, <a href="https://doi.org/10.21105/joss.00653">https://doi.org/10.21105/joss.00653</a>
 </dd>
 </dl>
 
