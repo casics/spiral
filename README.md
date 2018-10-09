@@ -162,7 +162,7 @@ Here is a list of all the splitters implemented in Spiral at this time:
 | `elementary_split`     | split by hard delimiters, forward camel case, and digits                                                                |
 | `heuristic_split`      | split by hard delimiters, forward camel case, and digits, but recognize special cases such as `utf8`, `sha256`, etc.    |
 | Samurai                | frequency-based algorithm published in the literature                                                                   |
-| Ronin                  | frequency-based algorithm based on Samurai but greatly extended (see [next section](#-performance))                     |
+| Ronin                  | frequency-based algorithm based on Samurai but greatly extended (see [previous section](#-performance))                     |
 
 The following table illustrates the differences between the simpler splitters.
 
