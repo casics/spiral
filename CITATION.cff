@@ -1,0 +1,21 @@
+cff-version: 1.2
+message: "If you use this software, please cite it using these metadata."
+title: "Spiral"
+authors: 
+  -
+    affiliation: "Caltech"
+    given-names: Mike
+    family-names: Hucka
+    orcid: "0000-0001-9105-5960"
+version: "1.1.0"
+abstract: "Spiral: splitters for identifiers in source code files"
+repository-code: "https://github.com/casics/spiral"
+type: software
+license-url: "https://github.com/casics/spiral/blob/master/LICENSE"
+keywords: 
+  - source code
+  - splitting identifiers
+  - code search
+  - machine learning
+  - mining software repositories
+date-released: 2018-04-29
