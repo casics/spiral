@@ -6,7 +6,10 @@
 # @website https://github.com/casics/spiral
 # =============================================================================
 
-import collections
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
 
 def msg(string, *other_args):
     '''Like the standard print(), but treats the first argument as a string
