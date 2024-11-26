@@ -59,12 +59,12 @@ Please also indicate the specific version of Spiral you use, to improve other pe
 
 For basic usage, the following is probably the simplest and most direct way to install Spiral on your computer:
 ```sh
-sudo pip3 install git+https://github.com/casics/spiral.git
+sudo pip3 install git+https://github.com/cnewman/spiral.git
 ```
 
 Alternatively, you can clone this GitHub repository and then run `setup.py`:
 ```sh
-git clone https://github.com/casics/spiral.git
+git clone https://github.com/cnewman/spiral.git
 cd spiral
 sudo python3 -m pip install .
 ```
